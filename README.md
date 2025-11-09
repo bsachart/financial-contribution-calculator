@@ -328,3 +328,4 @@ Things to improve:
 - Include the term "coumpounding rate" for inheritance calculations.
 - Have more tests to cover many edge cases.
 - Fix Property Ownership block in the partner details section. Half of the rent value should go from the non-owner to the owner and increase the total capacity of the owner.
+- Add custom favicon.
