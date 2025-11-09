@@ -1,0 +1,2119 @@
+--- DIRECTORY TREE of src ---
+src
+├── app.css
+├── app.d.ts
+├── app.html
+├── demo.spec.ts
+├── lib
+│   ├── assets
+│   │   └── favicon.svg
+│   ├── calculator.test.ts
+│   ├── calculator.ts
+│   ├── components
+│   │   ├── CurrencySelector.svelte
+│   │   ├── FeaturesColumn.svelte
+│   │   ├── FeatureToggles.svelte
+│   │   ├── PartnerColumn.svelte
+│   │   ├── PersonColumn.svelte
+│   │   ├── ResultCard.svelte
+│   │   └── SectionGroup.svelte
+│   ├── config
+│   │   ├── currencies.ts
+│   │   └── formConfig.ts
+│   ├── index.ts
+│   └── stores
+│       └── calculatorStore.ts
+└── routes
+    ├── +layout.svelte
+    └── +page.svelte
+
+7 directories, 20 files
+
+--- END OF DIRECTORY TREE ---
+
+--- CONTENT OF FILES in src ---
+--- START: src/app.html ---
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+		rel="stylesheet" />
+	%sveltekit.head%
+</head>
+
+<body data-sveltekit-preload-data="hover">
+	<div style="display: contents">%sveltekit.body%</div>
+</body>
+
+</html>
+--- END: src/app.html ---
+
+--- START: src/lib/assets/favicon.svg ---
+<svg xmlns="http://www.w3.org/2000/svg" width="107" height="128" viewBox="0 0 107 128"><title>svelte-logo</title><path d="M94.157 22.819c-10.4-14.885-30.94-19.297-45.792-9.835L22.282 29.608A29.92 29.92 0 0 0 8.764 49.65a31.5 31.5 0 0 0 3.108 20.231 30 30 0 0 0-4.477 11.183 31.9 31.9 0 0 0 5.448 24.116c10.402 14.887 30.942 19.297 45.791 9.835l26.083-16.624A29.92 29.92 0 0 0 98.235 78.35a31.53 31.53 0 0 0-3.105-20.232 30 30 0 0 0 4.474-11.182 31.88 31.88 0 0 0-5.447-24.116" style="fill:#ff3e00"/><path d="M45.817 106.582a20.72 20.72 0 0 1-22.237-8.243 19.17 19.17 0 0 1-3.277-14.503 18 18 0 0 1 .624-2.435l.49-1.498 1.337.981a33.6 33.6 0 0 0 10.203 5.098l.97.294-.09.968a5.85 5.85 0 0 0 1.052 3.878 6.24 6.24 0 0 0 6.695 2.485 5.8 5.8 0 0 0 1.603-.704L69.27 76.28a5.43 5.43 0 0 0 2.45-3.631 5.8 5.8 0 0 0-.987-4.371 6.24 6.24 0 0 0-6.698-2.487 5.7 5.7 0 0 0-1.6.704l-9.953 6.345a19 19 0 0 1-5.296 2.326 20.72 20.72 0 0 1-22.237-8.243 19.17 19.17 0 0 1-3.277-14.502 17.99 17.99 0 0 1 8.13-12.052l26.081-16.623a19 19 0 0 1 5.3-2.329 20.72 20.72 0 0 1 22.237 8.243 19.17 19.17 0 0 1 3.277 14.503 18 18 0 0 1-.624 2.435l-.49 1.498-1.337-.98a33.6 33.6 0 0 0-10.203-5.1l-.97-.294.09-.968a5.86 5.86 0 0 0-1.052-3.878 6.24 6.24 0 0 0-6.696-2.485 5.8 5.8 0 0 0-1.602.704L37.73 51.72a5.42 5.42 0 0 0-2.449 3.63 5.79 5.79 0 0 0 .986 4.372 6.24 6.24 0 0 0 6.698 2.486 5.8 5.8 0 0 0 1.602-.704l9.952-6.342a19 19 0 0 1 5.295-2.328 20.72 20.72 0 0 1 22.237 8.242 19.17 19.17 0 0 1 3.277 14.503 18 18 0 0 1-8.13 12.053l-26.081 16.622a19 19 0 0 1-5.3 2.328" style="fill:#fff"/></svg>
+--- END: src/lib/assets/favicon.svg ---
+
+--- START: src/lib/index.ts ---
+// place files you want to import through the `$lib` alias in this folder.
+
+--- END: src/lib/index.ts ---
+
+--- START: src/lib/config/formConfig.ts ---
+export interface FieldConfig {
+	label: string;
+	type: 'currency' | 'slider' | 'number' | 'date';
+	placeholder?: string;
+	help?: string;
+	min?: number;
+	max?: number;
+	step?: number;
+	section: string;
+	timeframeSensitive?: boolean;
+}
+
+export const DEFAULT_UNCERTAINTY_DISCOUNT = 20;
+
+export const FIELDS: Record<string, FieldConfig | ((timeframe: string) => FieldConfig)> = {
+	netIncome: (timeframe) => ({
+		label: `Net ${timeframe === 'yearly' ? 'Yearly' : 'Monthly'} Income (After Tax)`,
+		type: 'currency',
+		placeholder: '0',
+		help: "Your actual take-home pay. This is what's truly available to spend.",
+		step: 100,
+		section: 'income',
+		timeframeSensitive: true
+	}),
+	passiveAdvantages: {
+		label: 'Lifetime Passive Advantages Value',
+		type: 'currency',
+		placeholder: 'Estimated total value',
+		help: 'Education without debt, healthcare, tutoring, career support.',
+		step: 1000,
+		section: 'inheritance'
+	},
+	passiveAdvantagesDiscount: {
+		label: 'Discount Rate',
+		type: 'number',
+		min: 0,
+		max: 100,
+		step: 5,
+		help: 'These are non-liquid benefits (typically 60-80% discount).',
+		section: 'inheritance'
+	},
+	expectedFutureInheritance: {
+		label: 'Expected Future Inheritance',
+		type: 'currency',
+		placeholder: 'Expected amount',
+		help: 'Likely inheritance based on family wealth.',
+		step: 1000,
+		section: 'inheritance'
+	},
+	expectedFutureInheritanceDiscount: {
+		label: 'Discount Rate',
+		type: 'number',
+		min: 0,
+		max: 100,
+		step: 5,
+		help: 'Uncertainty discount (typically 30-70%).',
+		section: 'inheritance'
+	},
+	studentLoans: (timeframe) => ({
+		label: `Student Loan Payments`,
+		type: 'currency',
+		placeholder: '0',
+		help: 'Monthly payments that reduce your available income.',
+		step: 50,
+		section: 'debt',
+		timeframeSensitive: true
+	}),
+	familySupport: (timeframe) => ({
+		label: `Family Support Obligations`,
+		type: 'currency',
+		placeholder: '0',
+		help: 'Support for parents, siblings, or relatives. This is deducted from capacity.',
+		step: 50,
+		section: 'debt',
+		timeframeSensitive: true
+	}),
+	variableIncome: {
+		label: 'Variable Income (Bonus/Commission)',
+		type: 'currency',
+		placeholder: '0',
+		help: 'Expected annual amount from bonuses, commissions, or freelance work.',
+		step: 1000,
+		section: 'variable'
+	},
+	variableIncomeDiscount: {
+		label: 'Uncertainty Discount',
+		type: 'number',
+		min: 0,
+		max: 80,
+		step: 5,
+		help: 'How uncertain is this income? Higher discount = less reliable.',
+		section: 'variable'
+	},
+	retirementContributions: (timeframe) => ({
+		label: `Retirement Contributions`,
+		type: 'currency',
+		placeholder: '0',
+		help: 'Pre-tax savings that reduce current spending capacity.',
+		step: 50,
+		section: 'retirement',
+		timeframeSensitive: true
+	}),
+	marketRent: (timeframe) => ({
+		label: `Fair Market Rent`,
+		type: 'currency',
+		placeholder: '0',
+		help: 'What would this property rent for on the open market?',
+		step: 100,
+		section: 'housing',
+		timeframeSensitive: true
+	})
+} as const;
+
+export const SECTIONS = [
+	{
+		key: 'income',
+		title: 'Net Income',
+		icon: '💰',
+		shortDesc: 'After-tax earnings',
+		description: 'The foundation of all calculations. Use after-tax income for accuracy.',
+		whyMatter:
+			"This is what's actually available to spend. Using gross income would penalize those in higher tax brackets."
+	},
+	{
+		key: 'inheritance',
+		title: 'Inheritance & Advantages',
+		icon: '🏛️',
+		shortDesc: 'Past inheritances',
+		description: 'Direct cash inheritances and lifetime advantages like debt-free education.',
+		whyMatter:
+			'Someone who inherited $500k has vastly more capacity than their salary suggests. Ignoring this means the higher earner subsidizes someone objectively wealthier.'
+	},
+	{
+		key: 'debt',
+		title: 'Obligations & Debt',
+		icon: '💳',
+		shortDesc: 'Student loans & support',
+		description: 'Student loans and family support reduce available income.',
+		whyMatter:
+			'Two people earning $100k have different capacity if one has $1,500/month in student loans.'
+	},
+	{
+		key: 'variable',
+		title: 'Variable Income',
+		icon: '📈',
+		shortDesc: 'Bonuses & commissions',
+		description: 'Income that is not guaranteed, discounted for uncertainty.',
+		whyMatter:
+			'$100k base + $50k typical bonus has more capacity than $150k guaranteed, but less than $150k guaranteed.'
+	},
+	{
+		key: 'retirement',
+		title: 'Retirement Savings',
+		icon: '💼',
+		shortDesc: 'Pre-tax contributions',
+		description: 'Pre-tax contributions that reduce current spending ability.',
+		whyMatter:
+			'Someone saving 15% has less available income than someone saving 3%, even with equal salaries.'
+	},
+	{
+		key: 'housing',
+		title: 'Property Ownership',
+		icon: '🏠',
+		shortDesc: 'Home ownership',
+		description: 'If one partner owns the home, they should pay 50% of market rent.',
+		whyMatter: "The owner builds equity; the non-owner shouldn't subsidize this wealth-building."
+	}
+] as const;
+
+--- END: src/lib/config/formConfig.ts ---
+
+--- START: src/lib/config/currencies.ts ---
+export interface Currency {
+	code: string;
+	name: string;
+	flag: string;
+}
+
+export const CURRENCIES: Currency[] = [
+	{ code: 'USD', name: 'United States Dollar', flag: '🇺🇸' },
+	{ code: 'EUR', name: 'Euro', flag: '🇪🇺' },
+	{ code: 'GBP', name: 'British Pound', flag: '🇬🇧' },
+	{ code: 'CHF', name: 'Swiss Franc', flag: '🇨🇭' },
+	{ code: 'CAD', name: 'Canadian Dollar', flag: '🇨🇦' },
+	{ code: 'AUD', name: 'Australian Dollar', flag: '🇦🇺' },
+	{ code: 'JPY', name: 'Japanese Yen', flag: '🇯🇵' }
+];
+
+--- END: src/lib/config/currencies.ts ---
+
+--- START: src/lib/calculator.ts ---
+import type { Person, CalculatorState } from './stores/calculatorStore';
+
+const ASSUMED_RETURN_RATE = 5.5;
+
+export interface CalculationResult {
+	personId: string;
+	monthlyCapacity: number;
+	monthlyContribution: number;
+	percentage: number;
+	monthlyDisposable: number;
+	monthlyNetIncome: number;
+	breakdown: Array<{
+		label: string;
+		amount: number;
+		type: 'income' | 'deduction' | 'adjustment';
+	}>;
+}
+
+export function calculate(state: CalculatorState): CalculationResult[] {
+	const isYearly = state.timeframe === 'yearly';
+	const conversionFactor = isYearly ? 1 / 12 : 1;
+	const sharedExpensesMonthly = Math.max(0, state.sharedExpenses * conversionFactor);
+
+	// Guard against invalid state
+	if (!state.people || state.people.length === 0) return [];
+	if (sharedExpensesMonthly <= 0) {
+		return state.people.map((person) => ({
+			personId: person.id,
+			monthlyCapacity: 0,
+			monthlyContribution: 0,
+			percentage: 0,
+			monthlyDisposable: 0,
+			monthlyNetIncome: 0,
+			breakdown: []
+		}));
+	}
+
+	const capacities = state.people.map((person) => {
+		const netIncome = Math.max(0, person.netIncome || 0) * conversionFactor;
+		let capacity = netIncome;
+		const breakdown: CalculationResult['breakdown'] = [
+			{
+				label: 'Net Income',
+				amount: netIncome,
+				type: 'income'
+			}
+		];
+
+		// Retirement contributions (deduction)
+		const retirement = Math.max(0, person.retirementContributions || 0) * conversionFactor;
+		if (retirement > 0) {
+			capacity -= retirement;
+			breakdown.push({
+				label: 'Retirement Savings',
+				amount: -retirement,
+				type: 'deduction'
+			});
+		}
+
+		const afterRetirementIncome = Math.max(0, capacity);
+
+		// Direct inheritance (imputed income)
+		if (person.inheritances && person.inheritances.length > 0) {
+			person.inheritances.forEach((inheritance, index) => {
+				const amount = Math.max(0, inheritance.amount || 0);
+				const discount = Math.max(0, Math.min(100, inheritance.discount || 0)) / 100;
+				if (amount > 0) {
+					const discountedValue = amount * (1 - discount);
+					const monthlyIncome = (discountedValue * ASSUMED_RETURN_RATE) / (12 * 100);
+					capacity += monthlyIncome;
+					const label =
+						discount > 0
+							? `Inheritance ${index + 1} (${((1 - discount) * 100).toFixed(0)}% valued)`
+							: `Inheritance ${index + 1}`;
+					breakdown.push({
+						label,
+						amount: monthlyIncome,
+						type: 'adjustment'
+					});
+				}
+			});
+		}
+
+		// Passive advantages (heavily discounted)
+		const advantages = Math.max(0, person.passiveAdvantages || 0);
+		const advantagesDiscount =
+			Math.max(0, Math.min(100, person.passiveAdvantagesDiscount || 70)) / 100;
+		if (advantages > 0) {
+			const discountedValue = advantages * (1 - advantagesDiscount);
+			const monthlyIncome = (discountedValue * ASSUMED_RETURN_RATE) / (12 * 100);
+			capacity += monthlyIncome;
+			breakdown.push({
+				label: `Family Advantages (${((1 - advantagesDiscount) * 100).toFixed(0)}% valued)`,
+				amount: monthlyIncome,
+				type: 'adjustment'
+			});
+		}
+
+		// Expected future inheritance (uncertainty discount)
+		const futureInheritance = Math.max(0, person.expectedFutureInheritance || 0);
+		const futureDiscount =
+			Math.max(0, Math.min(100, person.expectedFutureInheritanceDiscount || 50)) / 100;
+		if (futureInheritance > 0) {
+			const discountedValue = futureInheritance * (1 - futureDiscount);
+			const monthlyIncome = (discountedValue * ASSUMED_RETURN_RATE) / (12 * 100);
+			capacity += monthlyIncome;
+			breakdown.push({
+				label: `Expected Inheritance (${((1 - futureDiscount) * 100).toFixed(0)}% valued)`,
+				amount: monthlyIncome,
+				type: 'adjustment'
+			});
+		}
+
+		// Student loans
+		const loans = Math.max(0, person.studentLoans || 0) * conversionFactor;
+		if (loans > 0) {
+			capacity -= loans;
+			breakdown.push({
+				label: 'Student Loans',
+				amount: -loans,
+				type: 'deduction'
+			});
+		}
+
+		// Family support
+		const support = Math.max(0, person.familySupport || 0) * conversionFactor;
+		if (support > 0) {
+			capacity -= support;
+			breakdown.push({
+				label: 'Family Support',
+				amount: -support,
+				type: 'deduction'
+			});
+		}
+
+		// Variable income (with uncertainty discount) - ALWAYS annual, convert to monthly
+		const variableIncome = Math.max(0, person.variableIncome || 0);
+		if (variableIncome > 0) {
+			const discount = Math.max(0, Math.min(100, person.variableIncomeDiscount || 0)) / 100;
+			const monthlyValue = (variableIncome * (1 - discount)) / 12;
+			capacity += monthlyValue;
+			breakdown.push({
+				label: `Variable Income (${((1 - discount) * 100).toFixed(0)}% valued)`,
+				amount: monthlyValue,
+				type: 'income'
+			});
+		}
+
+		return {
+			personId: person.id,
+			monthlyCapacity: Math.max(0, capacity),
+			monthlyNetIncome: Math.max(0, afterRetirementIncome),
+			breakdown
+		};
+	});
+
+	// Property ownership adjustment (owner gets 50% of market rent as net benefit)
+	if (state.propertyArrangement === 'owned' && state.propertyOwnerId) {
+		const owner = capacities.find((c) => c.personId === state.propertyOwnerId);
+		if (owner) {
+			const monthlyRentValue = Math.max(0, state.marketRent) * conversionFactor;
+			if (monthlyRentValue > 0) {
+				const netBenefit = monthlyRentValue * 0.5;
+				owner.monthlyCapacity += netBenefit;
+				owner.breakdown.push({
+					label: 'Property Ownership (50% rent value)',
+					amount: netBenefit,
+					type: 'adjustment'
+				});
+			}
+		}
+	}
+
+	// Calculate contributions
+	const totalCapacity = capacities.reduce((sum, c) => sum + c.monthlyCapacity, 0);
+	const safeTotalCapacity = totalCapacity > 0 ? totalCapacity : 1;
+
+	return capacities.map((cap) => {
+		const percentage = (cap.monthlyCapacity / safeTotalCapacity) * 100;
+		const contribution = (cap.monthlyCapacity / safeTotalCapacity) * sharedExpensesMonthly;
+
+		return {
+			personId: cap.personId,
+			monthlyCapacity: cap.monthlyCapacity,
+			monthlyContribution: Math.max(0, contribution),
+			percentage: isFinite(percentage) ? percentage : 0,
+			monthlyDisposable: Math.max(0, cap.monthlyNetIncome - contribution),
+			monthlyNetIncome: cap.monthlyNetIncome,
+			breakdown: cap.breakdown
+		};
+	});
+}
+
+export function formatCurrency(
+	amount: number,
+	currency: string,
+	timeframe: 'monthly' | 'yearly'
+): string {
+	const displayAmount = timeframe === 'yearly' ? amount * 12 : amount;
+	return new Intl.NumberFormat('en-US', {
+		style: 'currency',
+		currency: currency,
+		maximumFractionDigits: 0,
+		minimumFractionDigits: 0
+	}).format(isFinite(displayAmount) ? displayAmount : 0);
+}
+
+export function getTimeframeLabel(timeframe: 'monthly' | 'yearly'): string {
+	return timeframe === 'yearly' ? '/yr' : '/mo';
+}
+
+--- END: src/lib/calculator.ts ---
+
+--- START: src/lib/components/SectionGroup.svelte ---
+<script lang="ts">
+	import { slide } from 'svelte/transition';
+	import { calculatorStore } from '$lib/stores/calculatorStore';
+	import { FIELDS } from '$lib/config/formConfig';
+
+	export let section: any;
+	export let person: any;
+
+	let isExpanded = section.alwaysExpanded || false;
+	let showHelp = true;
+
+	$: timeframe = $calculatorStore.timeframe;
+	$: fields =
+		section.key === 'base'
+			? [['netIncome', FIELDS.netIncome]]
+			: Object.entries(FIELDS).filter(
+					([, config]) => (config as any).section === section.key
+				);
+
+	function toggleExpand(e: Event) {
+		if (!section.alwaysExpanded) {
+			isExpanded = !isExpanded;
+		}
+	}
+</script>
+
+<div class="border-t border-gray-200 pt-4 mt-4 {section.key === 'base' ? 'border-t-0 pt-0' : ''}">
+	<div class="flex items-center justify-between">
+		<div
+			class="flex items-center flex-1 font-medium text-gray-900 hover:text-indigo-600 cursor-pointer select-none"
+			on:click={toggleExpand}
+			on:keydown={(e) => e.key === 'Enter' && toggleExpand(e)}
+			role="button"
+			tabindex="0"
+			aria-expanded={isExpanded}
+		>
+			<span class="flex items-center">
+				{section.title}
+				<button
+					type="button"
+					class="ml-2 text-indigo-500 hover:text-indigo-700 text-sm"
+					on:click|stopPropagation={() => (showHelp = !showHelp)}
+				>
+					{showHelp ? 'Hide' : 'What?'}
+				</button>
+			</span>
+			{#if !section.alwaysExpanded}
+				<span class="ml-2 text-gray-400">{isExpanded ? '▼' : '▶'}</span>
+			{/if}
+		</div>
+	</div>
+
+	{#if showHelp}
+		<div class="mt-2 p-3 bg-blue-50 border-l-4 border-blue-400 text-sm text-blue-800" transition:slide>
+			{section.description}
+		</div>
+	{/if}
+
+	{#if isExpanded || section.alwaysExpanded}
+		<div class="mt-4 space-y-4">
+			{#each fields as [key, config]}
+				{@const fieldConfig = typeof config === 'function' ? config(timeframe) : config}
+				<label class="block">
+					<span class="text-sm font-medium text-gray-700">{fieldConfig.label}</span>
+
+					{#if fieldConfig.type === 'number'}
+						<input
+							type="number"
+							bind:value={person[key]}
+							placeholder={fieldConfig.placeholder || '0'}
+							step={fieldConfig.step || 100}
+							class="mt-1 block w-full form-input"
+							min="0"
+						/>
+					{:else if fieldConfig.type === 'select'}
+						<select bind:value={person[key]} class="mt-1 block w-full form-select">
+							{#each fieldConfig.options as option}
+								<option {value}>{option}</option>
+							{/each}
+						</select>
+					{:else if fieldConfig.type === 'slider'}
+						<div class="flex items-center gap-4 mt-2">
+							<input
+								type="range"
+								bind:value={person[key]}
+								min={fieldConfig.min}
+								max={fieldConfig.max}
+								step={fieldConfig.step}
+								class="w-full"
+							/>
+							<span class="text-sm font-semibold text-gray-800 w-16 text-center"
+								>{person[key] || 0}%</span
+							>
+						</div>
+					{/if}
+				</label>
+			{/each}
+		</div>
+	{/if}
+</div>
+--- END: src/lib/components/SectionGroup.svelte ---
+
+--- START: src/lib/components/PersonColumn.svelte ---
+<script lang="ts">
+  import { calculatorStore } from '$lib/stores/calculatorStore';
+  import SectionGroup from '$lib/components/SectionGroup.svelte';
+  import { SECTIONS } from '$lib/stores/calculatorStore';
+  
+  export let person: any;
+  // Removed unused index export
+  
+  function removePerson() {
+    calculatorStore.update(state => ({
+      ...state,
+      people: state.people.filter(p => p.id !== person.id)
+    }));
+  }
+</script>
+
+<div class="bg-white rounded-lg shadow-lg p-6 min-w-[320px]">
+  <div class="flex justify-between items-center mb-6">
+    <!-- Changed to div to avoid a11y warning -->
+    <div class="text-xl font-bold flex-1">
+      <input 
+        bind:value={person.name}
+        class="w-full bg-gray-50 rounded px-2 py-1 border-0 focus:ring-2 focus:ring-indigo-500"
+        placeholder="Enter name"
+      />
+    </div>
+    {#if $calculatorStore.people.length > 2}
+      <button 
+        on:click={removePerson}
+        class="ml-2 text-red-500 hover:text-red-700 text-2xl leading-none"
+        aria-label="Remove {person.name}"
+        type="button"
+      >
+        ×
+      </button>
+    {/if}
+  </div>
+
+  <!-- Base section (always visible) -->
+  <SectionGroup section={SECTIONS.find(s => s.key === 'base')} {person} />
+  
+  <!-- Optional sections -->
+  {#each SECTIONS.filter(s => s.key !== 'base' && $calculatorStore.activeSections.includes(s.key)) as section}
+    <SectionGroup {section} {person} />
+  {/each}
+</div>
+--- END: src/lib/components/PersonColumn.svelte ---
+
+--- START: src/lib/components/CurrencySelector.svelte ---
+<script lang="ts">
+	import { createEventDispatcher, onMount, onDestroy } from 'svelte';
+	import { fly } from 'svelte/transition';
+	import { CURRENCIES } from '$lib/config/currencies';
+	import { browser } from '$app/environment';
+
+	export let value: string;
+
+	let isOpen = false;
+	let searchTerm = '';
+	let dropdownElement: HTMLDivElement;
+
+	const dispatch = createEventDispatcher();
+
+	$: selected = CURRENCIES.find(c => c.code === value) || CURRENCIES[0];
+
+	$: filteredCurrencies = searchTerm
+		? CURRENCIES.filter(c => 
+				c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+				c.code.toLowerCase().includes(searchTerm.toLowerCase())
+			)
+		: CURRENCIES;
+
+	function selectCurrency(currency: typeof CURRENCIES[0]) {
+		value = currency.code;
+		dispatch('change', value);
+		// Close immediately
+		isOpen = false;
+		searchTerm = '';
+	}
+
+	function toggleDropdown(e: Event) {
+		e.stopPropagation();
+		isOpen = !isOpen;
+		if (!isOpen) {
+			searchTerm = '';
+		}
+	}
+
+	function handleClickOutside(e: MouseEvent) {
+		if (dropdownElement && !dropdownElement.contains(e.target as Node)) {
+			isOpen = false;
+			searchTerm = '';
+		}
+	}
+
+	function handleKeyDown(e: KeyboardEvent, currency: typeof CURRENCIES[0]) {
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault();
+			selectCurrency(currency);
+		}
+	}
+
+	onMount(() => {
+		if (browser) {
+			document.addEventListener('click', handleClickOutside);
+		}
+	});
+
+	onDestroy(() => {
+		if (browser) {
+			document.removeEventListener('click', handleClickOutside);
+		}
+	});
+</script>
+
+<div class="relative" bind:this={dropdownElement}>
+	<button
+		type="button"
+		class="relative w-full cursor-default rounded-lg border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500"
+		on:click={toggleDropdown}
+	>
+		<span class="flex items-center">
+			<span class="mr-2 text-lg">{selected.flag}</span>
+			<span class="block truncate">{selected.code}</span>
+		</span>
+		<span class="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
+			<svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+				<path fill-rule="evenodd" d="M10 3a.75.75 0 01.53.22l3.5 3.5a.75.75 0 01-1.06 1.06L10 4.81 6.53 8.28a.75.75 0 01-1.06-1.06l3.5-3.5A.75.75 0 0110 3zm-3.72 9.28a.75.75 0 011.06 0L10 15.19l3.47-3.47a.75.75 0 111.06 1.06l-4 4a.75.75 0 01-1.06 0l-4-4a.75.75 0 010-1.06z" clip-rule="evenodd" />
+			</svg>
+		</span>
+	</button>
+
+	{#if isOpen}
+		<div
+			transition:fly={{ y: -5, duration: 150 }}
+			class="absolute z-10 mt-1 w-full max-h-60 overflow-auto rounded-lg bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+		>
+			<div class="p-2 border-b border-gray-200">
+				<input
+					type="text"
+					placeholder="Search currency..."
+					bind:value={searchTerm}
+					class="w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+					on:click|stopPropagation
+				/>
+			</div>
+			<ul role="listbox">
+				{#each filteredCurrencies as currency (currency.code)}
+					<li
+						role="option"
+						tabindex="0"
+						aria-selected={selected.code === currency.code}
+						class="relative cursor-pointer select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-indigo-600 hover:text-white focus:bg-indigo-600 focus:text-white outline-none"
+						on:click|stopPropagation={() => selectCurrency(currency)}
+						on:keydown={(e) => handleKeyDown(e, currency)}
+					>
+						<div class="flex items-center">
+							<span class="mr-2">{currency.flag}</span>
+							<span class="block truncate">{currency.name}</span>
+							<span class="ml-auto text-xs">{currency.code}</span>
+						</div>
+					</li>
+				{/each}
+			</ul>
+		</div>
+	{/if}
+</div>
+--- END: src/lib/components/CurrencySelector.svelte ---
+
+--- START: src/lib/components/FeaturesColumn.svelte ---
+<script lang="ts">
+	import { SECTIONS } from '$lib/config/formConfig';
+	import { calculatorStore } from '$lib/stores/calculatorStore';
+	import { setActiveSection } from '$lib/stores/calculatorStore';
+
+	$: activeSection = $calculatorStore.activeSection;
+</script>
+
+<div class="bg-white rounded-xl shadow-lg p-6 min-w-[380px]">
+	<div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
+		<h2 class="text-xl font-bold text-gray-900">Feature Guide</h2>
+		<span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-medium">
+			WHY IT MATTERS
+		</span>
+	</div>
+
+	<div class="space-y-4">
+		{#each SECTIONS as section}
+			<button
+				type="button"
+				class="w-full text-left p-4 rounded-lg border-2 transition-all {activeSection === section.key 
+					? 'border-indigo-500 bg-indigo-50' 
+					: 'border-gray-200 hover:border-gray-300 bg-white'}"
+				on:click={() => setActiveSection(section.key)}
+			>
+				<div class="flex items-start gap-3">
+					<span class="text-2xl">{section.icon}</span>
+					<div class="flex-1">
+						<h3 class="font-semibold text-gray-900">{section.title}</h3>
+						<p class="text-sm text-gray-600 mt-1">{section.description}</p>
+						
+						{#if activeSection === section.key}
+							<div class="mt-3 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+								<p class="text-sm text-blue-800">
+									<strong>Why this matters:</strong> {section.whyMatter}
+								</p>
+							</div>
+						{/if}
+					</div>
+				</div>
+			</button>
+		{/each}
+	</div>
+
+	<div class="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+		<h4 class="font-semibold text-amber-900 mb-2">🎯 The Fairness Test</h4>
+		<p class="text-sm text-amber-800">
+			"Would this arrangement feel fair if the relationship ended tomorrow?" 
+			If yes, you've found the right balance.
+		</p>
+	</div>
+</div>
+--- END: src/lib/components/FeaturesColumn.svelte ---
+
+--- START: src/lib/components/PartnerColumn.svelte ---
+<script lang="ts">
+	import { FIELDS, SECTIONS } from '$lib/config/formConfig';
+	import { calculatorStore, removePartner, addInheritance, removeInheritance, updateInheritance } from '$lib/stores/calculatorStore';
+	import type { Person } from '$lib/stores/calculatorStore';
+
+	export let person: Person;
+
+	$: timeframe = $calculatorStore.timeframe;
+	$: enabledSections = $calculatorStore.enabledSections;
+	$: netIncomeField = FIELDS.netIncome(timeframe);
+
+	function handleNameChange(e: Event) {
+		const name = (e.target as HTMLInputElement).value;
+		calculatorStore.update(state => ({
+			...state,
+			people: state.people.map(p => p.id === person.id ? { ...p, name } : p)
+		}));
+	}
+
+	function updateField<K extends keyof Person>(key: K, value: Person[K]) {
+		calculatorStore.update(state => ({
+			...state,
+			people: state.people.map(p => p.id === person.id ? { ...p, [key]: value } : p)
+		}));
+	}
+</script>
+
+<div class="card p-5 min-w-[300px]">
+	<!-- Header -->
+	<div class="flex items-center justify-between mb-5 pb-4 border-b border-slate-200">
+		<input
+			value={person.name}
+			on:input={handleNameChange}
+			class="text-lg font-bold bg-slate-50 rounded-lg px-3 py-2 border-0 focus:ring-2 focus:ring-indigo-500 w-full"
+			placeholder="Enter name"
+		/>
+		{#if $calculatorStore.people.length > 2}
+			<button
+				type="button"
+				on:click={() => removePartner(person.id)}
+				class="ml-3 text-red-500 hover:text-red-600 font-bold text-xl transition-colors"
+				aria-label="Remove {person.name}"
+			>
+				×
+			</button>
+		{/if}
+	</div>
+
+	<!-- Income Section (always visible) -->
+	<div class="mb-5">
+		<label class="block">
+			<span class="text-sm font-semibold text-slate-700">{netIncomeField.label}</span>
+			<div class="input-group mt-1">
+				<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">$</span>
+				<input
+					type="number"
+					value={person.netIncome || 0}
+					on:input={(e) => updateField('netIncome', Number((e.target as HTMLInputElement).value) || 0)}
+					placeholder="0"
+					step={netIncomeField.step}
+					class="input-currency text-sm pl-8"
+					min="0"
+				/>
+			</div>
+			{#if netIncomeField.help}
+				<p class="text-xs text-slate-500 mt-1">{netIncomeField.help}</p>
+			{/if}
+		</label>
+	</div>
+
+	<!-- Inheritance Section -->
+	{#if enabledSections.includes('inheritance')}
+		<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-4">
+			<h4 class="font-semibold text-indigo-900 mb-3 flex items-center gap-2">
+				<span class="text-lg">🏛️</span>
+				Inheritance & Advantages
+			</h4>
+			
+			<div class="space-y-4">
+				<!-- Multiple Direct Inheritances -->
+				<div>
+					<div class="flex items-center justify-between mb-2">
+						<span class="text-sm font-medium text-slate-700">Direct Inheritances</span>
+						<button
+							type="button"
+							on:click={() => addInheritance(person.id)}
+							class="text-xs text-indigo-600 hover:text-indigo-700 font-semibold"
+						>
+							+ Add
+						</button>
+					</div>
+					
+					{#if person.inheritances && person.inheritances.length > 0}
+						<div class="space-y-3">
+							{#each person.inheritances as inheritance, idx}
+								<div class="bg-white rounded-lg p-3 border border-slate-200">
+									<div class="flex items-center justify-between mb-2">
+										<span class="text-xs font-semibold text-slate-600">Inheritance {idx + 1}</span>
+										<button
+											type="button"
+											on:click={() => removeInheritance(person.id, inheritance.id)}
+											class="text-red-500 hover:text-red-600 text-sm"
+										>
+											×
+										</button>
+									</div>
+									
+									<div class="space-y-2">
+										<div>
+											<label class="text-xs text-slate-600">Amount</label>
+											<div class="input-group mt-1">
+												<span class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
+												<input
+													type="number"
+													value={inheritance.amount || 0}
+													on:input={(e) => updateInheritance(person.id, inheritance.id, { amount: Number((e.target as HTMLInputElement).value) || 0 })}
+													class="w-full pl-6 pr-2 py-1.5 text-sm rounded border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+													step="1000"
+													min="0"
+												/>
+											</div>
+										</div>
+										
+										<div>
+											<label class="text-xs text-slate-600">Discount %</label>
+											<div class="flex items-center gap-2 mt-1">
+												<input
+													type="number"
+													value={inheritance.discount || 0}
+													on:input={(e) => updateInheritance(person.id, inheritance.id, { discount: Math.max(0, Math.min(100, Number((e.target as HTMLInputElement).value) || 0)) })}
+													class="w-20 px-2 py-1.5 text-sm rounded border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+													min="0"
+													max="100"
+													step="5"
+												/>
+												<span class="text-xs text-slate-500">({100 - (inheritance.discount || 0)}% valued)</span>
+											</div>
+										</div>
+										
+										<div>
+											<label class="text-xs text-slate-600">Received Date (optional)</label>
+											<input
+												type="date"
+												value={inheritance.receivedDate || ''}
+												on:input={(e) => updateInheritance(person.id, inheritance.id, { receivedDate: (e.target as HTMLInputElement).value })}
+												class="w-full px-2 py-1.5 text-sm rounded border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 mt-1"
+											/>
+										</div>
+									</div>
+								</div>
+							{/each}
+						</div>
+					{:else}
+						<p class="text-xs text-slate-500 italic">No inheritances added</p>
+					{/if}
+				</div>
+
+				<!-- Passive Advantages -->
+				<div>
+					<label class="block">
+						<span class="text-sm font-medium text-slate-700">{FIELDS.passiveAdvantages.label}</span>
+						<div class="input-group mt-1">
+							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">$</span>
+							<input
+								type="number"
+								value={person.passiveAdvantages || 0}
+								on:input={(e) => updateField('passiveAdvantages', Number((e.target as HTMLInputElement).value) || 0)}
+								placeholder="0"
+								step="1000"
+								class="input-currency text-sm pl-8"
+								min="0"
+							/>
+						</div>
+						<div class="flex items-center gap-2 mt-2">
+							<label class="text-xs text-slate-600">Discount %:</label>
+							<input
+								type="number"
+								value={person.passiveAdvantagesDiscount || 70}
+								on:input={(e) => updateField('passiveAdvantagesDiscount', Math.max(0, Math.min(100, Number((e.target as HTMLInputElement).value) || 70)))}
+								class="w-20 px-2 py-1 text-sm rounded border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+								min="0"
+								max="100"
+								step="5"
+							/>
+							<span class="text-xs text-slate-500">({100 - (person.passiveAdvantagesDiscount || 70)}% valued)</span>
+						</div>
+						{#if FIELDS.passiveAdvantages.help}
+							<p class="text-xs text-slate-500 mt-1">{FIELDS.passiveAdvantages.help}</p>
+						{/if}
+					</label>
+				</div>
+
+				<!-- Expected Future Inheritance -->
+				<div>
+					<label class="block">
+						<span class="text-sm font-medium text-slate-700">{FIELDS.expectedFutureInheritance.label}</span>
+						<div class="input-group mt-1">
+							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">$</span>
+							<input
+								type="number"
+								value={person.expectedFutureInheritance || 0}
+								on:input={(e) => updateField('expectedFutureInheritance', Number((e.target as HTMLInputElement).value) || 0)}
+								placeholder="0"
+								step="1000"
+								class="input-currency text-sm pl-8"
+								min="0"
+							/>
+						</div>
+						<div class="flex items-center gap-2 mt-2">
+							<label class="text-xs text-slate-600">Discount %:</label>
+							<input
+								type="number"
+								value={person.expectedFutureInheritanceDiscount || 50}
+								on:input={(e) => updateField('expectedFutureInheritanceDiscount', Math.max(0, Math.min(100, Number((e.target as HTMLInputElement).value) || 50)))}
+								class="w-20 px-2 py-1 text-sm rounded border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+								min="0"
+								max="100"
+								step="5"
+							/>
+							<span class="text-xs text-slate-500">({100 - (person.expectedFutureInheritanceDiscount || 50)}% valued)</span>
+						</div>
+						{#if FIELDS.expectedFutureInheritance.help}
+							<p class="text-xs text-slate-500 mt-1">{FIELDS.expectedFutureInheritance.help}</p>
+						{/if}
+					</label>
+				</div>
+			</div>
+		</div>
+	{/if}
+
+	<!-- Other Sections -->
+	{#each SECTIONS.filter(s => s.key !== 'income' && s.key !== 'housing' && s.key !== 'inheritance' && enabledSections.includes(s.key)) as section}
+		{@const sectionFields = Object.entries(FIELDS)
+			.filter(([key, config]) => {
+				const fieldConfig = typeof config === 'function' ? config(timeframe) : config;
+				return fieldConfig.section === section.key;
+			})
+		}
+		
+		{#if sectionFields.length > 0}
+			<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-4">
+				<h4 class="font-semibold text-indigo-900 mb-3 flex items-center gap-2">
+					<span class="text-lg">{section.icon}</span>
+					{section.title}
+				</h4>
+				
+				<div class="space-y-4">
+					{#each sectionFields as [key, config]}
+						{@const fieldConfig = typeof config === 'function' ? config(timeframe) : config}
+						{@const value = person[key] ?? 0}
+						
+						<label class="block">
+							<span class="text-sm font-medium text-slate-700">{fieldConfig.label}</span>
+							
+							{#if fieldConfig.type === 'currency'}
+								<div class="input-group mt-1">
+									<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">$</span>
+									<input
+										type="number"
+										value={value}
+										on:input={(e) => updateField(key as keyof Person, Number((e.target as HTMLInputElement).value) || 0)}
+										placeholder="0"
+										step={fieldConfig.step}
+										class="input-currency text-sm pl-8"
+										min="0"
+									/>
+								</div>
+							{:else if fieldConfig.type === 'number'}
+								<div class="flex items-center gap-2 mt-1">
+									<input
+										type="number"
+										value={value}
+										on:input={(e) => updateField(key as keyof Person, Math.max(0, Math.min(100, Number((e.target as HTMLInputElement).value) || 0)))}
+										class="w-20 px-3 py-2 text-sm rounded border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+										min={fieldConfig.min}
+										max={fieldConfig.max}
+										step={fieldConfig.step}
+									/>
+									<span class="text-xs text-slate-500">({100 - (value || 0)}% valued)</span>
+								</div>
+							{/if}
+							
+							{#if fieldConfig.help}
+								<p class="text-xs text-slate-500 mt-1">{fieldConfig.help}</p>
+							{/if}
+						</label>
+					{/each}
+				</div>
+			</div>
+		{/if}
+	{/each}
+
+	<!-- Property Ownership Section -->
+	{#if $calculatorStore.propertyArrangement === 'owned'}
+		{@const rentField = FIELDS.marketRent(timeframe)}
+		<div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+			<h4 class="font-semibold text-amber-900 mb-3 flex items-center gap-2">
+				<span class="text-lg">🏠</span>
+				Property Ownership
+			</h4>
+			
+			<label class="block">
+				<span class="text-sm font-medium text-slate-700">{rentField.label}</span>
+				<div class="input-group mt-1">
+					<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">$</span>
+					<input
+						type="number"
+						value={$calculatorStore.marketRent || 0}
+						on:input={(e) => calculatorStore.update(s => ({ 
+							...s, 
+							marketRent: Number((e.target as HTMLInputElement).value) || 0 
+						}))}
+						placeholder="0"
+						step={rentField.step}
+						class="input-currency text-sm pl-8"
+						min="0"
+					/>
+				</div>
+				{#if rentField.help}
+					<p class="text-xs text-slate-500 mt-1">{rentField.help}</p>
+				{/if}
+			</label>
+		</div>
+	{/if}
+</div>
+--- END: src/lib/components/PartnerColumn.svelte ---
+
+--- START: src/lib/components/ResultCard.svelte ---
+<script lang="ts">
+	import { formatCurrency, getTimeframeLabel } from '$lib/calculator';
+	import type { CalculationResult } from '$lib/calculator';
+	import { calculatorStore } from '$lib/stores/calculatorStore';
+	import { slide } from 'svelte/transition';
+
+	export let result: CalculationResult;
+	export let personName: string;
+
+	let showBreakdown = false;
+
+	$: isHighContributor = result.percentage > 50;
+</script>
+
+<div class="card p-5 hover:shadow-lg transition-all">
+	<h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+		<span class="w-2 h-2 rounded-full {isHighContributor ? 'bg-indigo-600' : 'bg-slate-400'}"></span>
+		{personName}
+	</h3>
+	
+	<dl class="space-y-3 text-sm">
+		<!-- Total Capacity First -->
+		<div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-200">
+			<dt class="text-slate-600 font-medium">Total Capacity</dt>
+			<dd class="font-bold text-blue-900 flex items-baseline gap-1">
+				<span>{formatCurrency(result.monthlyCapacity, $calculatorStore.currency, 'monthly')}</span>
+				<span class="text-xs text-slate-500">{getTimeframeLabel('monthly')}</span>
+			</dd>
+		</div>
+		
+		<!-- Contribution -->
+		<div class="flex justify-between items-center p-3 {isHighContributor ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-slate-200'} rounded-lg border">
+			<dt class="text-slate-600 font-medium">Contribution</dt>
+			<dd class="font-bold {isHighContributor ? 'text-indigo-900' : 'text-slate-700'} flex items-baseline gap-1">
+				<span>{formatCurrency(result.monthlyContribution, $calculatorStore.currency, 'monthly')}</span>
+				<span class="text-xs text-slate-500">{getTimeframeLabel('monthly')}</span>
+				<span class="text-xs font-semibold ml-1">({result.percentage.toFixed(1)}%)</span>
+			</dd>
+		</div>
+		
+		<!-- Disposable Income -->
+		<div class="flex justify-between items-center p-3 bg-green-50 rounded-lg border border-green-200">
+			<dt class="text-slate-600 font-medium">Disposable Income</dt>
+			<dd class="font-bold text-green-900 flex items-baseline gap-1">
+				<span>{formatCurrency(result.monthlyDisposable, $calculatorStore.currency, 'monthly')}</span>
+				<span class="text-xs text-slate-500">{getTimeframeLabel('monthly')}</span>
+			</dd>
+		</div>
+	</dl>
+
+	<button
+		type="button"
+		on:click={() => showBreakdown = !showBreakdown}
+		class="mt-4 w-full text-xs text-slate-500 hover:text-slate-700 font-medium flex items-center justify-between py-2 border-t border-slate-200"
+	>
+		<span>{showBreakdown ? 'Hide' : 'Show'} calculation breakdown</span>
+		<span class="transition-transform {showBreakdown ? 'rotate-180' : ''}">▼</span>
+	</button>
+
+	{#if showBreakdown}
+		<div transition:slide class="mt-3 pt-3 border-t border-slate-200">
+			<div class="space-y-1 text-xs">
+				{#each result.breakdown as item}
+					<div class="flex justify-between items-center py-1.5 px-2 rounded hover:bg-slate-50">
+						<span class="text-slate-600">{item.label}</span>
+						<span class={item.type === 'deduction' ? 'text-red-600 font-medium' : 'text-green-600 font-medium'}>
+							{item.type === 'deduction' ? '-' : '+'}
+							{formatCurrency(Math.abs(item.amount), $calculatorStore.currency, 'monthly')}
+						</span>
+					</div>
+				{/each}
+			</div>
+		</div>
+	{/if}
+</div>
+--- END: src/lib/components/ResultCard.svelte ---
+
+--- START: src/lib/components/FeatureToggles.svelte ---
+<script lang="ts">
+	import { SECTIONS } from '$lib/config/formConfig';
+	import { calculatorStore, toggleSection, setActiveSection } from '$lib/stores/calculatorStore';
+	import { slide } from 'svelte/transition';
+
+	function isEnabled(key: string) {
+		return $calculatorStore.enabledSections.includes(key);
+	}
+
+	function isActive(key: string) {
+		return $calculatorStore.activeSection === key;
+	}
+	
+	$: activeSectionData = $calculatorStore.activeSection 
+		? SECTIONS.find(s => s.key === $calculatorStore.activeSection) 
+		: null;
+</script>
+
+<div class="card p-4">
+	<h3 class="text-sm font-bold text-slate-900 mb-4">Feature Toggles</h3>
+	
+	<div class="space-y-2">
+		{#each SECTIONS.filter(s => s.key !== 'income' && s.key !== 'housing') as section}
+			<div class="flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-slate-50 {isActive(section.key) ? 'bg-indigo-50 border-2 border-indigo-200' : 'border-2 border-transparent'}">
+				<input
+					type="checkbox"
+					id="feature-{section.key}"
+					checked={isEnabled(section.key)}
+					on:change={() => toggleSection(section.key)}
+					class="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 transition-colors cursor-pointer"
+				/>
+				
+				<button
+					type="button"
+					on:click={() => setActiveSection(isActive(section.key) ? null : section.key)}
+					class="flex items-center gap-2 flex-1 text-left"
+				>
+					<span class="text-lg">{section.icon}</span>
+					<div class="flex-1">
+						<div class="text-sm font-semibold text-slate-900">{section.title}</div>
+						<div class="text-xs text-slate-500">{section.shortDesc}</div>
+					</div>
+				</button>
+			</div>
+		{/each}
+	</div>
+
+	{#if activeSectionData}
+		<div class="mt-4 p-3 bg-blue-50 border-l-4 border-blue-400 rounded-lg" transition:slide>
+			<p class="text-sm text-blue-800">
+				<strong>Why this matters:</strong> {activeSectionData.whyMatter}
+			</p>
+		</div>
+	{/if}
+</div>
+--- END: src/lib/components/FeatureToggles.svelte ---
+
+--- START: src/lib/stores/calculatorStore.ts ---
+import { writable, get } from 'svelte/store';
+
+export interface Inheritance {
+	id: string;
+	amount: number;
+	receivedDate?: string;
+	discount: number;
+}
+
+export interface Person {
+	id: string;
+	name: string;
+	netIncome: number;
+	inheritances?: Inheritance[];
+	passiveAdvantages?: number;
+	passiveAdvantagesDiscount: number;
+	expectedFutureInheritance?: number;
+	expectedFutureInheritanceDiscount: number;
+	studentLoans?: number;
+	familySupport?: number;
+	variableIncome?: number;
+	variableIncomeDiscount: number;
+	retirementContributions?: number;
+}
+
+export interface CalculatorState {
+	currency: string;
+	sharedExpenses: number;
+	timeframe: 'monthly' | 'yearly';
+	people: Person[];
+	propertyArrangement: 'none' | 'owned';
+	propertyOwnerId: string | null;
+	marketRent: number;
+	activeSection: string | null;
+	enabledSections: string[];
+}
+
+// Export SECTIONS from formConfig
+export { SECTIONS } from '$lib/config/formConfig';
+
+const createInitialPerson = (name: string): Person => ({
+	id: crypto.randomUUID(),
+	name,
+	netIncome: 0,
+	inheritances: [],
+	passiveAdvantagesDiscount: 70,
+	expectedFutureInheritanceDiscount: 50,
+	variableIncomeDiscount: 20
+});
+
+const initialState: CalculatorState = {
+	currency: 'USD',
+	sharedExpenses: 3000,
+	timeframe: 'monthly',
+	people: [createInitialPerson('Partner A'), createInitialPerson('Partner B')],
+	propertyArrangement: 'none',
+	propertyOwnerId: null,
+	marketRent: 0,
+	activeSection: null,
+	enabledSections: ['inheritance', 'debt', 'variable']
+};
+
+export const calculatorStore = writable<CalculatorState>(initialState);
+
+export function addPartner(name = `Partner ${get(calculatorStore).people.length + 1}`) {
+	calculatorStore.update((state) => ({
+		...state,
+		people: [...state.people, createInitialPerson(name)]
+	}));
+}
+
+export function removePartner(id: string) {
+	calculatorStore.update((state) => {
+		if (state.people.length <= 2) return state;
+		return {
+			...state,
+			people: state.people.filter((p) => p.id !== id),
+			propertyOwnerId: state.propertyOwnerId === id ? null : state.propertyOwnerId
+		};
+	});
+}
+
+export function addInheritance(personId: string) {
+	calculatorStore.update((state) => ({
+		...state,
+		people: state.people.map((p) =>
+			p.id === personId
+				? {
+						...p,
+						inheritances: [
+							...(p.inheritances || []),
+							{ id: crypto.randomUUID(), amount: 0, discount: 0 }
+						]
+					}
+				: p
+		)
+	}));
+}
+
+export function removeInheritance(personId: string, inheritanceId: string) {
+	calculatorStore.update((state) => ({
+		...state,
+		people: state.people.map((p) =>
+			p.id === personId
+				? {
+						...p,
+						inheritances: (p.inheritances || []).filter((i) => i.id !== inheritanceId)
+					}
+				: p
+		)
+	}));
+}
+
+export function updateInheritance(
+	personId: string,
+	inheritanceId: string,
+	updates: Partial<Inheritance>
+) {
+	calculatorStore.update((state) => ({
+		...state,
+		people: state.people.map((p) =>
+			p.id === personId
+				? {
+						...p,
+						inheritances: (p.inheritances || []).map((i) =>
+							i.id === inheritanceId ? { ...i, ...updates } : i
+						)
+					}
+				: p
+		)
+	}));
+}
+
+export function setTimeframe(timeframe: 'monthly' | 'yearly') {
+	calculatorStore.update((state) => {
+		if (state.timeframe === timeframe) return state;
+
+		const factor = timeframe === 'yearly' ? 12 : 1 / 12;
+
+		return {
+			...state,
+			timeframe,
+			sharedExpenses: Math.round(state.sharedExpenses * factor),
+			marketRent: Math.round(state.marketRent * factor),
+			people: state.people.map((p) => ({
+				...p,
+				netIncome: Math.round(p.netIncome * factor),
+				studentLoans: p.studentLoans ? Math.round(p.studentLoans * factor) : undefined,
+				familySupport: p.familySupport ? Math.round(p.familySupport * factor) : undefined,
+				retirementContributions: p.retirementContributions
+					? Math.round(p.retirementContributions * factor)
+					: undefined
+			}))
+		};
+	});
+}
+
+export function setActiveSection(key: string | null) {
+	calculatorStore.update((state) => ({
+		...state,
+		activeSection: key
+	}));
+}
+
+export function toggleSection(key: string) {
+	calculatorStore.update((state) => ({
+		...state,
+		enabledSections: state.enabledSections.includes(key)
+			? state.enabledSections.filter((k) => k !== key)
+			: [...state.enabledSections, key]
+	}));
+}
+
+--- END: src/lib/stores/calculatorStore.ts ---
+
+--- START: src/lib/calculator.test.ts ---
+import { describe, it, expect } from 'vitest';
+import { calculate } from './calculator';
+import type { CalculatorState } from './stores/calculatorStore';
+
+const DEFAULT_STATE: CalculatorState = {
+	currency: 'USD',
+	sharedExpenses: 3000,
+	timeframe: 'monthly',
+	people: [],
+	propertyArrangement: 'none',
+	propertyOwnerId: null,
+	marketRent: 0,
+	activeSection: null,
+	enabledSections: []
+};
+
+describe('Calculator', () => {
+	describe('Edge Cases', () => {
+		it('handles zero income without NaN', () => {
+			const state = {
+				...DEFAULT_STATE,
+				people: [
+					{ id: '1', name: 'A', netIncome: 0, variableIncomeDiscount: 20 },
+					{ id: '2', name: 'B', netIncome: 0, variableIncomeDiscount: 20 }
+				]
+			};
+			const results = calculate(state);
+
+			expect(results).toHaveLength(2);
+			results.forEach((r) => {
+				expect(r.monthlyCapacity).toBe(0);
+				expect(r.monthlyContribution).toBe(0);
+				expect(r.percentage).toBe(0);
+				expect(isNaN(r.percentage)).toBe(false);
+			});
+		});
+
+		it('handles single partner', () => {
+			const state = {
+				...DEFAULT_STATE,
+				people: [{ id: '1', name: 'A', netIncome: 5000, variableIncomeDiscount: 20 }]
+			};
+			const results = calculate(state);
+
+			expect(results).toHaveLength(1);
+			expect(results[0].percentage).toBe(100);
+			expect(results[0].monthlyContribution).toBe(3000);
+		});
+
+		it('handles zero shared expenses', () => {
+			const state = {
+				...DEFAULT_STATE,
+				sharedExpenses: 0,
+				people: [
+					{ id: '1', name: 'A', netIncome: 5000, variableIncomeDiscount: 20 },
+					{ id: '2', name: 'B', netIncome: 3000, variableIncomeDiscount: 20 }
+				]
+			};
+			const results = calculate(state);
+
+			results.forEach((r) => {
+				expect(r.monthlyContribution).toBe(0);
+				expect(isNaN(r.percentage)).toBe(false);
+			});
+		});
+
+		it('handles negative values gracefully', () => {
+			const state = {
+				...DEFAULT_STATE,
+				people: [
+					{ id: '1', name: 'A', netIncome: -1000, variableIncomeDiscount: 20 },
+					{ id: '2', name: 'B', netIncome: 5000, variableIncomeDiscount: 20 }
+				]
+			};
+			const results = calculate(state);
+
+			expect(results[0].monthlyCapacity).toBe(0); // Should clamp to 0
+			expect(results[1].monthlyCapacity).toBeGreaterThan(0);
+		});
+	});
+
+	describe('Basic Calculations', () => {
+		it('splits 60/40 based on income ratio', () => {
+			const state = {
+				...DEFAULT_STATE,
+				people: [
+					{ id: '1', name: 'A', netIncome: 6000, variableIncomeDiscount: 20 },
+					{ id: '2', name: 'B', netIncome: 4000, variableIncomeDiscount: 20 }
+				]
+			};
+			const results = calculate(state);
+
+			const a = results.find((r) => r.personId === '1')!;
+			const b = results.find((r) => r.personId === '2')!;
+
+			expect(a.percentage).toBeCloseTo(60, 1);
+			expect(b.percentage).toBeCloseTo(40, 1);
+			expect(a.monthlyContribution).toBeCloseTo(1800, 0); // 60% of $3000
+			expect(b.monthlyContribution).toBeCloseTo(1200, 0); // 40% of $3000
+		});
+
+		it('handles retirement contributions', () => {
+			const state = {
+				...DEFAULT_STATE,
+				people: [
+					{
+						id: '1',
+						name: 'A',
+						netIncome: 6000,
+						retirementContributions: 1000,
+						variableIncomeDiscount: 20
+					},
+					{ id: '2', name: 'B', netIncome: 4000, variableIncomeDiscount: 20 }
+				]
+			};
+			const results = calculate(state);
+
+			const a = results.find((r) => r.personId === '1')!;
+			// Person A has $5000 after retirement, Person B has $4000
+			// Ratio should be 55.6/44.4
+			expect(a.percentage).toBeCloseTo(55.6, 1);
+			expect(a.monthlyCapacity).toBeCloseTo(5000, 0);
+		});
+	});
+
+	describe('Inheritance', () => {
+		it('adds imputed income from direct inheritance', () => {
+			const state = {
+				...DEFAULT_STATE,
+				people: [
+					{
+						id: '1',
+						name: 'A',
+						netIncome: 5000,
+						directInheritance: 100000,
+						variableIncomeDiscount: 20
+					},
+					{ id: '2', name: 'B', netIncome: 5000, variableIncomeDiscount: 20 }
+				]
+			};
+			const results = calculate(state);
+
+			const a = results.find((r) => r.personId === '1')!;
+			const b = results.find((r) => r.personId === '2')!;
+
+			// $100k * 5.5% / 12 = ~$458/month imputed income
+			expect(a.monthlyCapacity).toBeCloseTo(5458, 0);
+			expect(b.monthlyCapacity).toBeCloseTo(5000, 0);
+			expect(a.percentage).toBeGreaterThan(b.percentage);
+		});
+
+		it('applies 70% discount to passive advantages', () => {
+			const state = {
+				...DEFAULT_STATE,
+				people: [
+					{
+						id: '1',
+						name: 'A',
+						netIncome: 5000,
+						passiveAdvantages: 100000,
+						variableIncomeDiscount: 20
+					},
+					{ id: '2', name: 'B', netIncome: 5000, variableIncomeDiscount: 20 }
+				]
+			};
+			const results = calculate(state);
+
+			const a = results.find((r) => r.personId === '1')!;
+			// $100k * 0.3 * 5.5% / 12 = ~$138/month
+			expect(a.monthlyCapacity).toBeCloseTo(5138, 0);
+		});
+
+		it('applies 50% discount to future inheritance', () => {
+			const state = {
+				...DEFAULT_STATE,
+				people: [
+					{
+						id: '1',
+						name: 'A',
+						netIncome: 5000,
+						expectedFutureInheritance: 200000,
+						variableIncomeDiscount: 20
+					},
+					{ id: '2', name: 'B', netIncome: 5000, variableIncomeDiscount: 20 }
+				]
+			};
+			const results = calculate(state);
+
+			const a = results.find((r) => r.personId === '1')!;
+			// $200k * 0.5 * 5.5% / 12 = ~$458/month
+			expect(a.monthlyCapacity).toBeCloseTo(5458, 0);
+		});
+	});
+
+	describe('Debt & Obligations', () => {
+		it('deducts student loans from capacity', () => {
+			const state = {
+				...DEFAULT_STATE,
+				people: [
+					{ id: '1', name: 'A', netIncome: 5000, studentLoans: 500, variableIncomeDiscount: 20 },
+					{ id: '2', name: 'B', netIncome: 5000, variableIncomeDiscount: 20 }
+				]
+			};
+			const results = calculate(state);
+
+			const a = results.find((r) => r.personId === '1')!;
+			expect(a.monthlyCapacity).toBeCloseTo(4500, 0);
+		});
+
+		it('deducts family support from capacity', () => {
+			const state = {
+				...DEFAULT_STATE,
+				people: [
+					{ id: '1', name: 'A', netIncome: 5000, familySupport: 800, variableIncomeDiscount: 20 },
+					{ id: '2', name: 'B', netIncome: 5000, variableIncomeDiscount: 20 }
+				]
+			};
+			const results = calculate(state);
+
+			const a = results.find((r) => r.personId === '1')!;
+			expect(a.monthlyCapacity).toBeCloseTo(4200, 0);
+		});
+	});
+
+	describe('Variable Income', () => {
+		it('applies uncertainty discount correctly', () => {
+			const state = {
+				...DEFAULT_STATE,
+				people: [
+					{
+						id: '1',
+						name: 'A',
+						netIncome: 5000,
+						variableIncome: 12000,
+						variableIncomeDiscount: 50
+					},
+					{ id: '2', name: 'B', netIncome: 5000, variableIncomeDiscount: 20 }
+				]
+			};
+			const results = calculate(state);
+
+			const a = results.find((r) => r.personId === '1')!;
+			// $12k * 50% discount / 12 = $500/month
+			expect(a.monthlyCapacity).toBeCloseTo(5500, 0);
+		});
+
+		it('handles 0% discount (guaranteed bonus)', () => {
+			const state = {
+				...DEFAULT_STATE,
+				people: [
+					{ id: '1', name: 'A', netIncome: 5000, variableIncome: 12000, variableIncomeDiscount: 0 },
+					{ id: '2', name: 'B', netIncome: 5000, variableIncomeDiscount: 20 }
+				]
+			};
+			const results = calculate(state);
+
+			const a = results.find((r) => r.personId === '1')!;
+			// $12k / 12 = $1000/month
+			expect(a.monthlyCapacity).toBeCloseTo(6000, 0);
+		});
+
+		it('handles 100% discount (ignore variable income)', () => {
+			const state = {
+				...DEFAULT_STATE,
+				people: [
+					{
+						id: '1',
+						name: 'A',
+						netIncome: 5000,
+						variableIncome: 12000,
+						variableIncomeDiscount: 100
+					},
+					{ id: '2', name: 'B', netIncome: 5000, variableIncomeDiscount: 20 }
+				]
+			};
+			const results = calculate(state);
+
+			const a = results.find((r) => r.personId === '1')!;
+			expect(a.monthlyCapacity).toBeCloseTo(5000, 0);
+		});
+	});
+
+	describe('Property Ownership', () => {
+		it('adds imputed rent for owner', () => {
+			const state = {
+				...DEFAULT_STATE,
+				propertyArrangement: 'owned',
+				propertyOwnerId: '1',
+				marketRent: 2000,
+				people: [
+					{ id: '1', name: 'A', netIncome: 5000, variableIncomeDiscount: 20 },
+					{ id: '2', name: 'B', netIncome: 5000, variableIncomeDiscount: 20 }
+				]
+			};
+			const results = calculate(state);
+
+			const a = results.find((r) => r.personId === '1')!;
+			const b = results.find((r) => r.personId === '2')!;
+
+			// Owner gets $2000 imputed income, but pays 50% of it as rent = $1000 net benefit
+			expect(a.monthlyCapacity).toBeCloseTo(6000, 0); // $5000 + $1000
+			expect(b.monthlyCapacity).toBeCloseTo(5000, 0);
+		});
+	});
+
+	describe('Yearly/Monthly Conversion', () => {
+		it('converts yearly to monthly correctly', () => {
+			const state = {
+				...DEFAULT_STATE,
+				timeframe: 'yearly',
+				sharedExpenses: 36000, // $3000/month
+				people: [
+					{ id: '1', name: 'A', netIncome: 60000, variableIncomeDiscount: 20 }, // $5000/month
+					{ id: '2', name: 'B', netIncome: 40000, variableIncomeDiscount: 20 } // $3333/month
+				]
+			};
+			const results = calculate(state);
+
+			const a = results.find((r) => r.personId === '1')!;
+			expect(a.monthlyContribution).toBeCloseTo(1800, 0); // Still 60% of $3000
+		});
+	});
+});
+
+--- END: src/lib/calculator.test.ts ---
+
+--- START: src/app.d.ts ---
+// See https://svelte.dev/docs/kit/types#app.d.ts
+// for information about these interfaces
+declare global {
+	namespace App {
+		// interface Error {}
+		// interface Locals {}
+		// interface PageData {}
+		// interface PageState {}
+		// interface Platform {}
+	}
+}
+
+export {};
+
+--- END: src/app.d.ts ---
+
+--- START: src/routes/+layout.svelte ---
+<script lang="ts">
+	import '../app.css';
+	import favicon from '$lib/assets/favicon.svg';
+
+	let { children } = $props();
+</script>
+
+<svelte:head>
+	<link rel="icon" href={favicon} />
+</svelte:head>
+
+{@render children()}
+
+--- END: src/routes/+layout.svelte ---
+
+--- START: src/routes/+page.svelte ---
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import { calculatorStore, addPartner, setTimeframe } from '$lib/stores/calculatorStore';
+	import { calculate, formatCurrency } from '$lib/calculator';
+	import FeatureToggles from '$lib/components/FeatureToggles.svelte';
+	import PartnerColumn from '$lib/components/PartnerColumn.svelte';
+	import ResultCard from '$lib/components/ResultCard.svelte';
+	import CurrencySelector from '$lib/components/CurrencySelector.svelte';
+	import { setActiveSection } from '$lib/stores/calculatorStore';
+
+	$: results = calculate($calculatorStore);
+	$: totalSharedExpenses = $calculatorStore.sharedExpenses * ($calculatorStore.timeframe === 'yearly' ? 1/12 : 1);
+	$: totalCapacity = results.reduce((sum, r) => sum + r.monthlyCapacity, 0);
+	$: remainingCapacity = totalCapacity - totalSharedExpenses;
+
+	onMount(() => {
+		setActiveSection('inheritance');
+	});
+</script>
+
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+	<!-- Header -->
+	<header class="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-10">
+		<div class="max-w-7xl mx-auto px-6 py-4">
+			<div class="flex items-center justify-between">
+				<div>
+					<h1 class="text-2xl font-bold text-slate-900">
+						Financial Contribution Calculator
+					</h1>
+					<p class="text-sm text-slate-600 mt-0.5">
+						Fair, proportional contributions based on true financial capacity
+					</p>
+				</div>
+				<div class="text-right">
+					<div class="text-xs text-slate-500">Total shared expenses</div>
+					<div class="text-xl font-bold text-indigo-600">
+						{formatCurrency(totalSharedExpenses, $calculatorStore.currency, 'monthly')}/mo
+					</div>
+				</div>
+			</div>
+		</div>
+	</header>
+
+	<main class="max-w-7xl mx-auto px-6 py-6">
+		<!-- Settings Bar -->
+		<div class="card p-4 mb-6">
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+				<div>
+					<label class="block">
+						<span class="text-xs font-semibold text-slate-700 uppercase tracking-wide">Currency</span>
+						<CurrencySelector
+							value={$calculatorStore.currency}
+							on:change={(e) => calculatorStore.update(s => ({ ...s, currency: e.detail }))}
+						/>
+					</label>
+				</div>
+				
+				<div>
+					<label class="block">
+						<span class="text-xs font-semibold text-slate-700 uppercase tracking-wide">Shared Expenses</span>
+						<div class="input-group mt-1">
+							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">$</span>
+							<input
+								type="number"
+								value={$calculatorStore.sharedExpenses}
+								on:input={(e) => calculatorStore.update(s => ({ 
+									...s, 
+									sharedExpenses: Math.max(0, Number((e.target as HTMLInputElement).value) || 0) 
+								}))}
+								class="input-currency text-sm pl-8"
+								step="100"
+								min="0"
+							/>
+						</div>
+					</label>
+				</div>
+				
+				<div>
+					<label class="block">
+						<span class="text-xs font-semibold text-slate-700 uppercase tracking-wide">Timeframe</span>
+						<div class="relative flex w-full mt-1 p-0.5 bg-slate-100 rounded-lg">
+							<button
+								type="button"
+								class="w-full px-3 py-1.5 text-xs font-semibold rounded-md transition-all { $calculatorStore.timeframe === 'monthly' 
+									? 'bg-white text-slate-900 shadow-sm' 
+									: 'text-slate-600 hover:text-slate-900' }"
+								on:click={() => setTimeframe('monthly')}
+							>
+								Monthly
+							</button>
+							<button
+								type="button"
+								class="w-full px-3 py-1.5 text-xs font-semibold rounded-md transition-all { $calculatorStore.timeframe === 'yearly' 
+									? 'bg-white text-slate-900 shadow-sm' 
+									: 'text-slate-600 hover:text-slate-900' }"
+								on:click={() => setTimeframe('yearly')}
+							>
+								Yearly
+							</button>
+						</div>
+					</label>
+				</div>
+
+				<div>
+					<label class="block">
+						<span class="text-xs font-semibold text-slate-700 uppercase tracking-wide">Property Ownership</span>
+						<div class="relative flex w-full mt-1 p-0.5 bg-slate-100 rounded-lg">
+							<button
+								type="button"
+								class="w-full px-3 py-1.5 text-xs font-semibold rounded-md transition-all { $calculatorStore.propertyArrangement === 'none' 
+									? 'bg-white text-slate-900 shadow-sm' 
+									: 'text-slate-600 hover:text-slate-900' }"
+								on:click={() => calculatorStore.update(s => ({ ...s, propertyArrangement: 'none', propertyOwnerId: null }))}
+							>
+								No Owner
+							</button>
+							<button
+								type="button"
+								class="w-full px-3 py-1.5 text-xs font-semibold rounded-md transition-all { $calculatorStore.propertyArrangement === 'owned' 
+									? 'bg-white text-slate-900 shadow-sm' 
+									: 'text-slate-600 hover:text-slate-900' }"
+								on:click={() => calculatorStore.update(s => ({ ...s, propertyArrangement: 'owned' }))}
+							>
+								One Owns
+							</button>
+						</div>
+					</label>
+				</div>
+
+				{#if $calculatorStore.propertyArrangement === 'owned'}
+					<div class="col-span-full pt-3 border-t border-slate-200">
+						<label class="block">
+							<span class="text-xs font-semibold text-slate-700 mb-2 block">Who owns the property?</span>
+							<div class="flex gap-3">
+								{#each $calculatorStore.people as person}
+									<button
+										type="button"
+										class="flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-all {$calculatorStore.propertyOwnerId === person.id 
+											? 'bg-indigo-600 text-white shadow-sm' 
+											: 'bg-slate-100 text-slate-600 hover:bg-slate-200'}"
+										on:click={() => calculatorStore.update(s => ({ ...s, propertyOwnerId: person.id }))}
+									>
+										{person.name}
+									</button>
+								{/each}
+							</div>
+						</label>
+					</div>
+				{/if}
+			</div>
+		</div>
+
+		<!-- Instructions -->
+		<div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+			<div class="flex items-start gap-3">
+				<span class="text-blue-600 text-lg">💡</span>
+				<div>
+					<h3 class="font-semibold text-blue-900 text-sm mb-1">How to use:</h3>
+					<ol class="text-xs text-blue-800 space-y-0.5 list-decimal list-inside">
+						<li>Configure settings above</li>
+						<li>Enable features in the left panel</li>
+						<li>Fill in values for each partner</li>
+						<li>Review results and adjust until fair</li>
+					</ol>
+				</div>
+			</div>
+		</div>
+
+		<!-- Main Grid -->
+		<div class="grid grid-cols-1 lg:grid-cols-[280px,1fr] gap-6">
+			<!-- Feature Toggles -->
+			<div class="space-y-4">
+				<div class="lg:sticky lg:top-24">
+					<FeatureToggles />
+				</div>
+				
+				<div class="lg:sticky lg:top-[calc(100vh-200px)] bg-amber-50 border border-amber-200 rounded-xl p-3">
+					<div class="flex items-start gap-2">
+						<span class="text-amber-600">⚖️</span>
+						<div>
+							<h4 class="font-semibold text-amber-900 text-xs mb-1">Fairness Test</h4>
+							<p class="text-xs text-amber-800">
+								"Would this feel fair if we broke up tomorrow?"
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Partners Section -->
+			<div class="space-y-6">
+				<div class="flex items-center justify-between">
+					<h2 class="text-lg font-bold text-slate-900">Partner Details</h2>
+					<button
+						type="button"
+						on:click={() => addPartner()}
+						class="btn-primary"
+					>
+						+ Add Partner
+					</button>
+				</div>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+					{#each $calculatorStore.people as person (person.id)}
+						<PartnerColumn {person} />
+					{/each}
+				</div>
+			</div>
+		</div>
+
+		<!-- Results Panel -->
+		{#if results.length > 0 && $calculatorStore.sharedExpenses > 0}
+			<div class="mt-6 card p-6">
+				<h2 class="text-lg font-bold text-slate-900 mb-6">📊 Calculation Results</h2>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+					{#each results as result}
+						{@const person = $calculatorStore.people.find(p => p.id === result.personId)}
+						{#if person}
+							<ResultCard {result} personName={person.name} />
+						{/if}
+					{/each}
+				</div>
+
+				<div class="mt-6 pt-6 border-t border-slate-200">
+					<div class="grid grid-cols-3 gap-4 text-center">
+						<div class="group">
+							<div class="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+								{formatCurrency(totalCapacity, $calculatorStore.currency, 'monthly')}/mo
+							</div>
+							<div class="text-xs text-slate-500 uppercase tracking-wide">Combined Capacity</div>
+						</div>
+						<div class="group">
+							<div class="text-xl font-bold text-indigo-600">
+								{formatCurrency(totalSharedExpenses, $calculatorStore.currency, 'monthly')}/mo
+							</div>
+							<div class="text-xs text-slate-500 uppercase tracking-wide">Shared Expenses</div>
+						</div>
+						<div class="group">
+							<div class="text-xl font-bold {remainingCapacity >= 0 ? 'text-emerald-600' : 'text-red-600'}">
+								{formatCurrency(remainingCapacity, $calculatorStore.currency, 'monthly')}/mo
+							</div>
+							<div class="text-xs text-slate-500 uppercase tracking-wide">Remaining</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		{/if}
+	</main>
+</div>
+--- END: src/routes/+page.svelte ---
+
+--- START: src/app.css ---
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+
+@layer base {
+  html {
+    font-size: 16px;
+  }
+
+  body {
+    @apply antialiased font-sans bg-gradient-to-br from-slate-50 to-slate-100;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-slate-200 transition-all duration-200 hover:shadow-md;
+  }
+
+  .btn-primary {
+    @apply px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 active:bg-indigo-800 transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-slate-100 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-200 active:bg-slate-300 transition-colors;
+  }
+
+  .input-group {
+    @apply relative;
+  }
+
+  .input-currency {
+    @apply pl-8 pr-3 py-2 block w-full rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 transition-colors font-medium text-slate-900;
+  }
+
+  .input-plain {
+    @apply px-3 py-2 block w-full rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 transition-colors;
+  }
+
+  .toggle-switch {
+    @apply relative inline-flex items-center h-6 w-11 rounded-full transition-colors;
+  }
+
+  .toggle-switch.active {
+    @apply bg-indigo-600;
+  }
+
+  .toggle-switch.inactive {
+    @apply bg-slate-300;
+  }
+
+  .toggle-switch-thumb {
+    @apply inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm;
+  }
+}
+--- END: src/app.css ---
+
+--- START: src/demo.spec.ts ---
+import { describe, it, expect } from 'vitest';
+
+describe('sum test', () => {
+	it('adds 1 + 2 to equal 3', () => {
+		expect(1 + 2).toBe(3);
+	});
+});
+
+--- END: src/demo.spec.ts ---
+
