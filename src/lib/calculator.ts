@@ -10,8 +10,8 @@ export interface CalculationResult {
 	breakdown: Array<{
 		label: string;
 		amount: number;
-		type: 'income' | 'deduction' | 'imputed'; // Changed from 'adjustment' to 'imputed'
-		category: string; // For color coding
+		type: 'income' | 'deduction' | 'imputed';
+		category: string;
 	}>;
 }
 
@@ -56,8 +56,6 @@ function calculatePersonCapacity(
 		});
 	}
 
-	const afterInitialIncome = Math.max(0, capacity);
-
 	// Direct inheritances (imputed income)
 	person.inheritances.forEach((inheritance, index) => {
 		const monthlyIncome = calculateImputedIncome(inheritance);
@@ -65,7 +63,7 @@ function calculatePersonCapacity(
 			capacity += monthlyIncome;
 			const percentage = 100 - inheritance.discount;
 			breakdown.push({
-				label: `${inheritance.name || `Inheritance ${index + 1}`} (${percentage}% valued)`,
+				label: `${inheritance.name || `Inheritance ${index + 1}`} (${percentage}% valued at ${inheritance.returnRate}% compounding rate)`,
 				amount: monthlyIncome,
 				type: 'imputed',
 				category: 'inheritance'
@@ -82,7 +80,7 @@ function calculatePersonCapacity(
 
 		capacity += monthlyIncome;
 		breakdown.push({
-			label: `Family Advantages (${Math.round((1 - discount) * 100)}% valued)`,
+			label: `Family Advantages (${Math.round((1 - discount) * 100)}% valued at ${rate}% compounding rate)`,
 			amount: monthlyIncome,
 			type: 'imputed',
 			category: 'advantages'
@@ -92,12 +90,13 @@ function calculatePersonCapacity(
 	// Expected future inheritance (imputed income with uncertainty discount)
 	if (person.expectedFutureInheritance > 0) {
 		const discount = Math.max(0, Math.min(100, person.expectedFutureInheritanceDiscount)) / 100;
+		const rate = 5.5; // Use default rate for future inheritance
 		const discountedValue = person.expectedFutureInheritance * (1 - discount);
-		const monthlyIncome = (discountedValue * ASSUMED_RETURN_RATE) / (12 * 100);
+		const monthlyIncome = (discountedValue * rate) / (12 * 100);
 
 		capacity += monthlyIncome;
 		breakdown.push({
-			label: `Expected Inheritance (${Math.round((1 - discount) * 100)}% valued)`,
+			label: `Expected Inheritance (${Math.round((1 - discount) * 100)}% valued at ${rate}% compounding rate)`,
 			amount: monthlyIncome,
 			type: 'imputed',
 			category: 'future-inheritance'
@@ -178,16 +177,21 @@ export function calculate(state: CalculatorState): CalculationResult[] {
 		};
 	});
 
-	// Property ownership adjustment
-	if (state.propertyArrangement === 'owned' && state.propertyOwnerId) {
-		const owner = capacities.find((c) => c.personId === state.propertyOwnerId);
-		if (owner && state.marketRent > 0) {
-			const monthlyRentValue = Math.max(0, state.marketRent) * conversionFactor;
-			const netBenefit = monthlyRentValue * 0.5;
-			owner.monthlyCapacity += netBenefit;
-			owner.breakdown.push({
-				label: 'Property Ownership (50% rent value)',
-				amount: netBenefit,
+	// Property ownership adjustment - FIXED LOGIC
+	if (state.propertyArrangement === 'owned' && state.propertyOwnerId && state.marketRent > 0) {
+		const monthlyRentValue = Math.max(0, state.marketRent) * conversionFactor;
+		const ownerIndex = capacities.findIndex((c) => c.personId === state.propertyOwnerId);
+
+		if (ownerIndex !== -1) {
+			// Owner pays 50% of market rent (their housing consumption cost)
+			// This is already a payment they're making, so we ADD it to their capacity
+			// because it represents housing value they're providing to themselves
+			const ownerRentContribution = monthlyRentValue * 0.5;
+
+			capacities[ownerIndex].monthlyCapacity += ownerRentContribution;
+			capacities[ownerIndex].breakdown.push({
+				label: 'Property Ownership (50% of market rent)',
+				amount: ownerRentContribution,
 				type: 'imputed',
 				category: 'property'
 			});

@@ -1,12 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { calculatorStore } from '$lib/stores/calculatorStore';
-  import { calculate, formatCurrency, getTimeframeLabel } from '$lib/calculator'; // Added getTimeframeLabel import
+  import { calculate, formatCurrency, getTimeframeLabel } from '$lib/calculator';
   import FeatureToggles from '$lib/components/FeatureToggles.svelte';
   import PartnerColumn from '$lib/components/PartnerColumn.svelte';
   import ResultCard from '$lib/components/ResultCard.svelte';
   import CurrencySelector from '$lib/components/CurrencySelector.svelte';
-  import { slide, fade } from 'svelte/transition';
+  import { fade } from 'svelte/transition';
 
   let fileInput: HTMLInputElement;
   let showImportSuccess = false;
@@ -14,13 +14,12 @@
 
   $: results = calculate($calculatorStore);
   
-  // Calculate totals based on current timeframe
-  $: conversionFactor = $calculatorStore.timeframe === 'yearly' ? 1 : 1;
-  $: totalSharedExpenses = $calculatorStore.sharedExpenses * conversionFactor;
+  // Calculate totals - FIXED: Always use monthly for calculations
+  $: conversionFactor = $calculatorStore.timeframe === 'yearly' ? 1 / 12 : 1;
+  $: sharedExpensesMonthly = $calculatorStore.sharedExpenses * conversionFactor;
   $: totalCapacity = results.reduce((sum, r) => sum + r.monthlyCapacity, 0);
-  $: remainingCapacity = totalCapacity - totalSharedExpenses;
+  $: remainingCapacity = totalCapacity - sharedExpensesMonthly;
 
-  // Import/export functions
   function handleExport() {
     const data = calculatorStore.exportState();
     const blob = new Blob([data], { type: 'application/json' });
@@ -28,7 +27,9 @@
     const a = document.createElement('a');
     a.href = url;
     a.download = `financial-calculator-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
 
@@ -57,7 +58,6 @@
     };
     reader.readAsText(file);
     
-    // Reset file input
     if (fileInput) fileInput.value = '';
   }
 
@@ -123,7 +123,7 @@
           <div class="text-right">
             <div class="text-xs text-slate-500">Total shared expenses</div>
             <div class="text-xl font-bold text-indigo-600">
-              {formatCurrency(totalSharedExpenses, $calculatorStore.currency, $calculatorStore.timeframe)} {getTimeframeLabel($calculatorStore.timeframe)}
+              {formatCurrency(sharedExpensesMonthly, $calculatorStore.currency, 'monthly')} {getTimeframeLabel('monthly')}
             </div>
           </div>
         </div>
@@ -184,9 +184,9 @@
             <div class="relative flex w-full mt-1 p-0.5 bg-slate-100 rounded-lg">
               <button
                 type="button"
-                class="w-full px-3 py-1.5 text-xs font-semibold rounded-md transition-all { $calculatorStore.timeframe === 'monthly' 
+                class="w-full px-3 py-1.5 text-xs font-semibold rounded-md transition-all {$calculatorStore.timeframe === 'monthly' 
                   ? 'bg-white text-slate-900 shadow-sm' 
-                  : 'text-slate-600 hover:text-slate-900' }"
+                  : 'text-slate-600 hover:text-slate-900'}"
                 on:click={() => calculatorStore.setTimeframe('monthly')}
                 aria-pressed={$calculatorStore.timeframe === 'monthly'}
               >
@@ -194,9 +194,9 @@
               </button>
               <button
                 type="button"
-                class="w-full px-3 py-1.5 text-xs font-semibold rounded-md transition-all { $calculatorStore.timeframe === 'yearly' 
+                class="w-full px-3 py-1.5 text-xs font-semibold rounded-md transition-all {$calculatorStore.timeframe === 'yearly' 
                   ? 'bg-white text-slate-900 shadow-sm' 
-                  : 'text-slate-600 hover:text-slate-900' }"
+                  : 'text-slate-600 hover:text-slate-900'}"
                 on:click={() => calculatorStore.setTimeframe('yearly')}
                 aria-pressed={$calculatorStore.timeframe === 'yearly'}
               >
@@ -212,9 +212,9 @@
             <div class="relative flex w-full mt-1 p-0.5 bg-slate-100 rounded-lg">
               <button
                 type="button"
-                class="w-full px-3 py-1.5 text-xs font-semibold rounded-md transition-all { $calculatorStore.propertyArrangement === 'none' 
+                class="w-full px-3 py-1.5 text-xs font-semibold rounded-md transition-all {$calculatorStore.propertyArrangement === 'none' 
                   ? 'bg-white text-slate-900 shadow-sm' 
-                  : 'text-slate-600 hover:text-slate-900' }"
+                  : 'text-slate-600 hover:text-slate-900'}"
                 on:click={() => calculatorStore.update(s => ({ ...s, propertyArrangement: 'none', propertyOwnerId: null }))}
                 aria-pressed={$calculatorStore.propertyArrangement === 'none'}
               >
@@ -222,9 +222,9 @@
               </button>
               <button
                 type="button"
-                class="w-full px-3 py-1.5 text-xs font-semibold rounded-md transition-all { $calculatorStore.propertyArrangement === 'owned' 
+                class="w-full px-3 py-1.5 text-xs font-semibold rounded-md transition-all {$calculatorStore.propertyArrangement === 'owned' 
                   ? 'bg-white text-slate-900 shadow-sm' 
-                  : 'text-slate-600 hover:text-slate-900' }"
+                  : 'text-slate-600 hover:text-slate-900'}"
                 on:click={() => calculatorStore.update(s => ({ ...s, propertyArrangement: 'owned' }))}
                 aria-pressed={$calculatorStore.propertyArrangement === 'owned'}
               >
@@ -275,15 +275,15 @@
     </div>
 
     <!-- Main Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-[280px,1fr] gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-[300px,1fr] gap-6">
       <!-- Feature Toggles Sidebar -->
-      <div class="space-y-4 lg:space-y-0">
+      <aside class="space-y-4">
         <FeatureToggles />
         
-        <!-- Fairness Test (moved here to avoid floating) -->
-        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 lg:sticky lg:top-[calc(24rem)]">
+        <!-- Fairness Test - FIXED positioning -->
+        <div class="card p-3">
           <div class="flex items-start gap-2">
-            <span class="text-amber-600">⚖️</span>
+            <span class="text-amber-600 text-lg">⚖️</span>
             <div>
               <h4 class="font-semibold text-amber-900 text-xs mb-1">Fairness Test</h4>
               <p class="text-xs text-amber-800">
@@ -292,7 +292,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </aside>
 
       <!-- Partners Section -->
       <div class="space-y-6">
@@ -315,8 +315,8 @@
       </div>
     </div>
 
-    <!-- Results Panel -->
-    {#if results.length > 0 && $calculatorStore.sharedExpenses > 0}
+    <!-- Results Panel - FIXED timeframe display -->
+    {#if results.length > 0 && sharedExpensesMonthly > 0}
       <div class="mt-6 card p-6">
         <h2 class="text-lg font-bold text-slate-900 mb-6">📊 Calculation Results</h2>
 
@@ -333,19 +333,19 @@
           <div class="grid grid-cols-3 gap-4 text-center">
             <div class="group">
               <div class="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                {formatCurrency(totalCapacity, $calculatorStore.currency, $calculatorStore.timeframe)} {getTimeframeLabel($calculatorStore.timeframe)}
+                {formatCurrency(totalCapacity, $calculatorStore.currency, 'monthly')} {getTimeframeLabel('monthly')}
               </div>
               <div class="text-xs text-slate-500 uppercase tracking-wide">Combined Capacity</div>
             </div>
             <div class="group">
               <div class="text-xl font-bold text-indigo-600">
-                {formatCurrency(totalSharedExpenses, $calculatorStore.currency, $calculatorStore.timeframe)} {getTimeframeLabel($calculatorStore.timeframe)}
+                {formatCurrency(sharedExpensesMonthly, $calculatorStore.currency, 'monthly')} {getTimeframeLabel('monthly')}
               </div>
               <div class="text-xs text-slate-500 uppercase tracking-wide">Shared Expenses</div>
             </div>
             <div class="group">
               <div class="text-xl font-bold {remainingCapacity >= 0 ? 'text-emerald-600' : 'text-red-600'}">
-                {formatCurrency(remainingCapacity, $calculatorStore.currency, $calculatorStore.timeframe)} {getTimeframeLabel($calculatorStore.timeframe)}
+                {formatCurrency(remainingCapacity, $calculatorStore.currency, 'monthly')} {getTimeframeLabel('monthly')}
               </div>
               <div class="text-xs text-slate-500 uppercase tracking-wide">Remaining</div>
             </div>

@@ -14,7 +14,6 @@
     calculatorStore.updatePerson(person.id, key, value);
   }
 
-  // Group sections by type for better organization
   $: inheritanceFields = {
     passiveAdvantages: FIELDS.passiveAdvantages,
     passiveAdvantagesDiscount: FIELDS.passiveAdvantagesDiscount,
@@ -155,6 +154,23 @@
                         />
                       </div>
                     </div>
+
+                    <!-- NEW: Date Received Field -->
+                    <div>
+                      <label for="inheritance-date-{inheritance.id}" class="text-xs text-slate-600">Date Received</label>
+                      <input
+                        id="inheritance-date-{inheritance.id}"
+                        type="date"
+                        value={inheritance.receivedDate}
+                        on:input={(e) => 
+                          calculatorStore.updateInheritance(person.id, inheritance.id, { 
+                            receivedDate: (e.target as HTMLInputElement).value 
+                          })
+                        }
+                        class="w-full px-2 py-1.5 text-sm rounded border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 mt-1"
+                      />
+                      <p class="text-xs text-slate-500 mt-0.5">Used for compounding calculation</p>
+                    </div>
                     
                     <div class="grid grid-cols-2 gap-2">
                       <div>
@@ -179,7 +195,7 @@
                       </div>
                       
                       <div>
-                        <label for="inheritance-rate-{inheritance.id}" class="text-xs text-slate-600">Return %</label>
+                        <label for="inheritance-rate-{inheritance.id}" class="text-xs text-slate-600">Rate %</label>
                         <input
                           id="inheritance-rate-{inheritance.id}"
                           type="number"
@@ -193,6 +209,7 @@
                           min="0"
                           max="100"
                           step="0.5"
+                          title="Annual compounding rate"
                         />
                       </div>
                     </div>
@@ -240,7 +257,7 @@
                 </div>
               </div>
               <div>
-                <label for="passiveAdvantagesReturnRate-{person.id}" class="text-xs text-slate-600">Return %</label>
+                <label for="passiveAdvantagesReturnRate-{person.id}" class="text-xs text-slate-600">Rate %</label>
                 <input
                   id="passiveAdvantagesReturnRate-{person.id}"
                   type="number"
@@ -250,6 +267,7 @@
                   min="0"
                   max="100"
                   step="0.5"
+                  title="Annual compounding rate"
                 />
               </div>
             </div>

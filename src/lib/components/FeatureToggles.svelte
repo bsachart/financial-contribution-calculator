@@ -35,7 +35,7 @@
   }
 </script>
 
-<div class="card p-4 lg:sticky lg:top-24">
+<div class="card p-4">
   <h3 class="text-sm font-bold text-slate-900 mb-4">Feature Toggles</h3>
   
   <div class="space-y-2">

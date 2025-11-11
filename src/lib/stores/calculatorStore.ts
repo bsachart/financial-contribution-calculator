@@ -1,13 +1,12 @@
-import { writable } from 'svelte/store';
-import type { CalculationResult } from '$lib/calculator';
+import { writable, get } from 'svelte/store';
 
 export interface Inheritance {
 	id: string;
 	name: string;
 	amount: number;
-	receivedDate?: string;
+	receivedDate: string; // ISO date string
 	discount: number;
-	returnRate: number; // Configurable rate instead of hardcoded
+	returnRate: number;
 }
 
 export interface Person {
@@ -17,14 +16,14 @@ export interface Person {
 	inheritances: Inheritance[];
 	passiveAdvantages: number;
 	passiveAdvantagesDiscount: number;
-	passiveAdvantagesReturnRate: number; // Configurable rate
+	passiveAdvantagesReturnRate: number;
 	expectedFutureInheritance: number;
 	expectedFutureInheritanceDiscount: number;
 	studentLoans: number;
 	familySupport: number;
 	variableIncome: number;
 	variableIncomeDiscount: number;
-	retirementMatching: number; // Changed from contributions to matching
+	retirementMatching: number;
 }
 
 export interface CalculatorState {
@@ -76,7 +75,6 @@ const DEFAULT_STATE: CalculatorState = {
 	enabledSections: ['inheritance', 'debt', 'variable']
 };
 
-// Load from localStorage if available
 function loadFromStorage(): CalculatorState | null {
 	if (typeof window === 'undefined') return null;
 
@@ -85,7 +83,6 @@ function loadFromStorage(): CalculatorState | null {
 		if (!saved) return null;
 
 		const parsed = JSON.parse(saved);
-		// Validate the data structure
 		if (!parsed.people || !Array.isArray(parsed.people)) return null;
 
 		return parsed;
@@ -123,7 +120,7 @@ function createStore() {
 
 		removePartner(id: string) {
 			update((state) => {
-				if (state.people.length <= 2) return state; // Keep at least 2 partners
+				if (state.people.length <= 2) return state;
 				return {
 					...state,
 					people: state.people.filter((p) => p.id !== id),
@@ -152,6 +149,7 @@ function createStore() {
 										id: crypto.randomUUID(),
 										name: `Inheritance ${p.inheritances.length + 1}`,
 										amount: 0,
+										receivedDate: new Date().toISOString().split('T')[0],
 										discount: 0,
 										returnRate: ASSUMED_RETURN_RATE
 									}
@@ -228,7 +226,7 @@ function createStore() {
 		},
 
 		exportState(): string {
-			const state = get(this);
+			const state = get({ subscribe });
 			return JSON.stringify(state, null, 2);
 		},
 

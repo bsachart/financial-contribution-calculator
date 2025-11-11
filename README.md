@@ -317,15 +317,12 @@ This calculator is particularly valuable for couples establishing financial patt
 
 Things to improve:
 
-- "Retirement saving" should be renamed to employment matching
 - Total shared expenses value is different than SHARED EXPENSES.
-- export button is broken
-- import button might not work
-- "📊 Calculation Results" section is broken depending on the timeframe (yearly, monthly)
-- Inheritance start time is not provided.
-- "Fairness Test" is broken, floating on top of "Feature Toggles".
+- "📊 Calculation Results" is only shown in monthly, not yearly, even though the yearly button is selected.
+- Total shared expenses is also only shown in monthly, not yearly.
+- Yearly / Monthly button sticky? to avoid scrolling up and down
+- Regarding property ownernship, the income from the non-owner, should be added to the owner one to compute the total capacity.
+- It should be made explicit that when the property is owned by one partner, shared expenses do not include the rent/mortgage payments. Only utilities and insurance.
+- Why this matters can be shown next to the features, and always be displayed, not need to click to show or hide.
 - Should "Feature Toggles" be a side block?
-- Include the term "coumpounding rate" for inheritance calculations.
-- Have more tests to cover many edge cases.
-- Fix Property Ownership block in the partner details section. Half of the rent value should go from the non-owner to the owner and increase the total capacity of the owner.
-- Add custom favicon.
+- Add custom favicon (balance).
