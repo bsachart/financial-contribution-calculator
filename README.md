@@ -1,5 +1,7 @@
 # Couple Financial Contribution Calculator
 
+🔗 **Live Demo:** [https://bsachart.github.io/financial-contribution-calculator/](https://bsachart.github.io/financial-contribution-calculator/)
+
 A tool to help couples determine fair, proportional financial contributions based on **actual financial capacity**—not just salary.
 
 ## Core Philosophy
