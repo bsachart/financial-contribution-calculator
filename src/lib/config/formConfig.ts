@@ -111,17 +111,17 @@ export const FIELDS: Record<string, FieldConfig | ((timeframe: string) => FieldC
 
 	// Debt fields
 	studentLoans: (timeframe) => ({
-		label: `Student Loan Payments`,
+		label: `Student Loan Payments (${timeframe === 'yearly' ? 'Yearly' : 'Monthly'})`,
 		type: 'currency',
 		placeholder: '0',
-		help: 'Monthly payments that reduce your available income.',
+		help: `${timeframe === 'yearly' ? 'Annual' : 'Monthly'} payments that reduce your available income.`,
 		step: 50,
 		section: 'debt',
 		timeframeSensitive: true
 	}),
 
 	familySupport: (timeframe) => ({
-		label: `Family Support Obligations`,
+		label: `Family Support Obligations (${timeframe === 'yearly' ? 'Yearly' : 'Monthly'})`,
 		type: 'currency',
 		placeholder: '0',
 		help: 'Support for parents, siblings, or relatives. This is deducted from capacity.',
@@ -152,7 +152,7 @@ export const FIELDS: Record<string, FieldConfig | ((timeframe: string) => FieldC
 
 	// Retirement matching (instead of contributions)
 	retirementMatching: (timeframe) => ({
-		label: `Employer Retirement Matching`,
+		label: `Employer Retirement Matching (${timeframe === 'yearly' ? 'Yearly' : 'Monthly'})`,
 		type: 'currency',
 		placeholder: '0',
 		help: 'Free money from employer matching. This increases your capacity.',
@@ -163,7 +163,7 @@ export const FIELDS: Record<string, FieldConfig | ((timeframe: string) => FieldC
 
 	// Housing
 	marketRent: (timeframe) => ({
-		label: `Fair Market Rent`,
+		label: `Fair Market Rent (${timeframe === 'yearly' ? 'Yearly' : 'Monthly'})`,
 		type: 'currency',
 		placeholder: '0',
 		help: 'What would this property rent for on the open market?',

@@ -13,8 +13,9 @@
   let showImportError = false;
 
   $: results = calculate($calculatorStore);
+  $: timeframe = $calculatorStore.timeframe;
   
-  // Calculate totals - FIXED: Always use monthly for calculations
+  // All calculations use monthly internally
   $: conversionFactor = $calculatorStore.timeframe === 'yearly' ? 1 / 12 : 1;
   $: sharedExpensesMonthly = $calculatorStore.sharedExpenses * conversionFactor;
   $: totalCapacity = results.reduce((sum, r) => sum + r.monthlyCapacity, 0);
@@ -73,8 +74,8 @@
 </script>
 
 <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-  <!-- Header -->
-  <header class="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-10">
+  <!-- Sticky Header -->
+  <header class="bg-white/95 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50 shadow-sm">
     <div class="max-w-7xl mx-auto px-6 py-4">
       <div class="flex items-center justify-between flex-wrap gap-4">
         <div>
@@ -87,12 +88,13 @@
         </div>
         
         <div class="flex items-center gap-4 flex-wrap">
-          <!-- Export/Import Controls -->
+          <!-- Export/Import/Reset Controls -->
           <div class="flex items-center gap-2">
             <button
               type="button"
               on:click={handleExport}
               class="btn-secondary text-xs px-3 py-1.5"
+              title="Export configuration"
             >
               📥 Export
             </button>
@@ -107,6 +109,7 @@
             <label
               for="import-file"
               class="btn-secondary text-xs px-3 py-1.5 cursor-pointer"
+              title="Import configuration"
             >
               📤 Import
             </label>
@@ -114,6 +117,7 @@
               type="button"
               on:click={resetAll}
               class="btn-secondary text-xs px-3 py-1.5 text-red-600 hover:bg-red-50"
+              title="Reset all data"
             >
               🗑️ Reset
             </button>
@@ -145,12 +149,12 @@
       </div>
     {/if}
 
-    <!-- Settings Bar -->
-    <div class="card p-4 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+    <!-- Settings Bar - FIXED: Better alignment -->
+    <div class="card p-4 mb-6 sticky top-20 z-40 bg-white/95 backdrop-blur-sm">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-start">
         <div>
           <label class="block">
-            <span class="text-xs font-semibold text-slate-700 uppercase tracking-wide">Currency</span>
+            <span class="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1 block">Currency</span>
             <CurrencySelector
               value={$calculatorStore.currency}
               on:change={(e) => calculatorStore.update(s => ({ ...s, currency: e.detail }))}
@@ -160,8 +164,8 @@
         
         <div>
           <label class="block">
-            <span class="text-xs font-semibold text-slate-700 uppercase tracking-wide">Shared Expenses</span>
-            <div class="input-group mt-1">
+            <span class="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1 block">Shared Expenses</span>
+            <div class="input-group">
               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">$</span>
               <input
                 type="number"
@@ -175,13 +179,20 @@
                 min="0"
               />
             </div>
+            <p class="text-xs text-slate-500 mt-1">
+              {#if $calculatorStore.propertyArrangement === 'owned'}
+                ⚠️ Excludes rent/mortgage (utilities & insurance only)
+              {:else}
+                Includes all shared living costs
+              {/if}
+            </p>
           </label>
         </div>
         
         <div>
           <label class="block">
-            <span class="text-xs font-semibold text-slate-700 uppercase tracking-wide">Timeframe</span>
-            <div class="relative flex w-full mt-1 p-0.5 bg-slate-100 rounded-lg">
+            <span class="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1 block">Timeframe</span>
+            <div class="relative flex w-full p-0.5 bg-slate-100 rounded-lg">
               <button
                 type="button"
                 class="w-full px-3 py-1.5 text-xs font-semibold rounded-md transition-all {$calculatorStore.timeframe === 'monthly' 
@@ -206,10 +217,10 @@
           </label>
         </div>
 
-        <div>
+        <div class="lg:col-span-2">
           <label class="block">
-            <span class="text-xs font-semibold text-slate-700 uppercase tracking-wide">Property Ownership</span>
-            <div class="relative flex w-full mt-1 p-0.5 bg-slate-100 rounded-lg">
+            <span class="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1 block">Property Ownership</span>
+            <div class="relative flex w-full p-0.5 bg-slate-100 rounded-lg">
               <button
                 type="button"
                 class="w-full px-3 py-1.5 text-xs font-semibold rounded-md transition-all {$calculatorStore.propertyArrangement === 'none' 
@@ -265,7 +276,7 @@
         <div>
           <h3 class="font-semibold text-blue-900 text-sm mb-1">How to use:</h3>
           <ol class="text-xs text-blue-800 space-y-0.5 list-decimal list-inside">
-            <li>Configure settings above</li>
+            <li>Configure settings above (timeframe affects all inputs)</li>
             <li>Enable features in the left panel</li>
             <li>Fill in values for each partner</li>
             <li>Review results and adjust until fair</li>
@@ -274,21 +285,23 @@
       </div>
     </div>
 
-    <!-- Main Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-[300px,1fr] gap-6">
+    <!-- Main Grid - FIXED: Better sidebar layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-[320px,1fr] gap-6">
       <!-- Feature Toggles Sidebar -->
       <aside class="space-y-4">
-        <FeatureToggles />
-        
-        <!-- Fairness Test - FIXED positioning -->
-        <div class="card p-3">
-          <div class="flex items-start gap-2">
-            <span class="text-amber-600 text-lg">⚖️</span>
-            <div>
-              <h4 class="font-semibold text-amber-900 text-xs mb-1">Fairness Test</h4>
-              <p class="text-xs text-amber-800">
-                "Would this feel fair if we broke up tomorrow?"
-              </p>
+        <div class="lg:sticky lg:top-32 lg:self-start space-y-4">
+          <FeatureToggles />
+          
+          <!-- Fairness Test - Always visible, not floating -->
+          <div class="card p-4 bg-amber-50 border-amber-200">
+            <div class="flex items-start gap-3">
+              <span class="text-amber-600 text-2xl">⚖️</span>
+              <div>
+                <h4 class="font-semibold text-amber-900 text-sm mb-2">Fairness Test</h4>
+                <p class="text-xs text-amber-800 leading-relaxed">
+                  "Would this feel fair if we broke up tomorrow?"
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -315,7 +328,7 @@
       </div>
     </div>
 
-    <!-- Results Panel - FIXED timeframe display -->
+    <!-- Results Panel - FIXED: Now respects timeframe throughout -->
     {#if results.length > 0 && sharedExpensesMonthly > 0}
       <div class="mt-6 card p-6">
         <h2 class="text-lg font-bold text-slate-900 mb-6">📊 Calculation Results</h2>
@@ -333,19 +346,19 @@
           <div class="grid grid-cols-3 gap-4 text-center">
             <div class="group">
               <div class="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                {formatCurrency(totalCapacity, $calculatorStore.currency, 'monthly')} {getTimeframeLabel('monthly')}
+                {formatCurrency(totalCapacity, $calculatorStore.currency, timeframe)} {getTimeframeLabel(timeframe)}
               </div>
               <div class="text-xs text-slate-500 uppercase tracking-wide">Combined Capacity</div>
             </div>
             <div class="group">
               <div class="text-xl font-bold text-indigo-600">
-                {formatCurrency(sharedExpensesMonthly, $calculatorStore.currency, 'monthly')} {getTimeframeLabel('monthly')}
+                {formatCurrency(sharedExpensesMonthly, $calculatorStore.currency, timeframe)} {getTimeframeLabel(timeframe)}
               </div>
               <div class="text-xs text-slate-500 uppercase tracking-wide">Shared Expenses</div>
             </div>
             <div class="group">
               <div class="text-xl font-bold {remainingCapacity >= 0 ? 'text-emerald-600' : 'text-red-600'}">
-                {formatCurrency(remainingCapacity, $calculatorStore.currency, 'monthly')} {getTimeframeLabel('monthly')}
+                {formatCurrency(remainingCapacity, $calculatorStore.currency, timeframe)} {getTimeframeLabel(timeframe)}
               </div>
               <div class="text-xs text-slate-500 uppercase tracking-wide">Remaining</div>
             </div>

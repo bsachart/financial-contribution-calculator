@@ -7,6 +7,8 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	<title>Financial Contribution Calculator</title>
+	<meta name="description" content="Fair, proportional financial contributions based on true financial capacity" />
 </svelte:head>
 
 {@render children()}

@@ -42,6 +42,8 @@ The calculator uses **proportional contribution** based on total financial capac
 
 **Why it's fair:** Only expenses that benefit both partners should be split. Personal discretionary spending remains individual.
 
+**Important:** When one partner owns the property, shared expenses should **exclude** rent/mortgage payments. Only include utilities, insurance, and maintenance that both partners benefit from.
+
 ### Currency
 
 **What it captures:** Your primary currency for expenses.
@@ -54,7 +56,7 @@ The calculator uses **proportional contribution** based on total financial capac
 
 **What it captures:**
 
-- Lump sum inheritances already received
+- Lump sum inheritances already received (with date tracking for compounding)
 - **Two distinct types:**
   - **Direct inheritance:** Cash, property, securities (hard money with clear value)
   - **Passive family advantages:** Education without debt, healthcare, tutoring, career risk-taking ability, social capital, ongoing family support (soft benefits that are diffuse and indirect)
@@ -71,18 +73,17 @@ _Without including this, the higher earner subsidizes someone who is objectively
 
 **How it's calculated:**
 
-- **Direct inheritance:** Compound from receipt date at inflation + 2.5%, then apply current rate to generate imputed annual income. This represents what that wealth would reasonably generate if preserved.
+- **Direct inheritance:** Compound from receipt date at the specified rate, then apply current rate to generate imputed annual income. This represents what that wealth would reasonably generate if preserved.
 - **Passive advantages:** Estimate lifetime value of educational/developmental benefits, then apply a **50-70% discount** before annualizing. This heavy discount acknowledges:
   - These benefits are indirect, non-liquid, and often consumed (education is in the past)
   - They've already partially contributed to current salary (double-counting risk)
   - Harder to document and quantify than direct cash
   - Represent privileges, not transferable assets
-- **Input method:** Enter current total value (simple) or original amounts with dates for automatic compounding (detailed)
 
 **Example of the 50-70% discount:**
 
-- Partner A: $500k direct inheritance → $27,500 annual imputed capacity (at 5.5% rate)
-- Partner B: $500k estimated passive advantages (private school, no student debt, family connections, ongoing support) → **$8,250 annual imputed capacity** (70% discount to $150k, then 5.5% rate)
+- Partner A: $500k direct inheritance (received 5 years ago) → Compounds to ~$655k → $36,000 annual imputed capacity (at 5.5% rate)
+- Partner B: $500k estimated passive advantages → 70% discount to $150k → $8,250 annual imputed capacity (at 5.5% rate)
 
 The heavy discount recognizes these advantages are real but not equivalent to having liquid cash in hand.
 
@@ -96,7 +97,7 @@ The heavy discount recognizes these advantages are real but not equivalent to ha
 
 - Estimate expected amount
 - Apply heavy discount for uncertainty: 70% (distant/uncertain), 50% (medium-term), or 30% (near-term/certain)
-- Calculate imputed income: Discounted Amount × (inflation + 2.5%)
+- Calculate imputed income: Discounted Amount × 5.5%
 - **Crucial:** Recalculate when inheritance is actually received
 
 ### 3. Dependent Support
@@ -132,8 +133,6 @@ The heavy discount recognizes these advantages are real but not equivalent to ha
 
 **Calculator approach:** Specify what percentage of overtime to include (0-100%). Default: include 100% of regular, expected overtime.
 
-That makes sense for clarity. Here's the revised section:
-
 ### 6. Pre-Relationship Property Ownership
 
 **What it captures:** One partner owns the residence where both live; the non-owner shouldn't subsidize the owner's equity building or opportunity cost of capital.
@@ -146,14 +145,15 @@ That makes sense for clarity. Here's the revised section:
 
 1. Determine **fair market rent** for the property (what a neutral renter would pay)
 2. **Owner pays 50% of market rent** into shared expenses (they're both owner and occupant)
-3. Both partners split all other housing costs proportionally: utilities, maintenance, HOA fees, property taxes, insurance
+3. Both partners split all other housing costs proportionally: utilities, maintenance, HOA fees, property taxes (if local custom), insurance
 4. The owner separately pays the actual mortgage (this is their wealth-building activity, not split)
 
 **Example:** Market rent = $3,000/month
 
-- Owner pays: $1,500 (their "rent") + their proportional share of $500 utilities/maintenance
-- Non-owner pays: Their proportional share of $500 utilities/maintenance
+- Owner pays: $1,500 (their "rent") + their proportional share of utilities/maintenance
+- Non-owner pays: Their proportional share of utilities/maintenance
 - Owner's mortgage payment: $2,200 (entirely their responsibility)
+- **Shared expenses exclude the rent/mortgage** - only utilities and insurance are split
 
 **Important:** Document the property's value and owner's equity at relationship start. If you separate, this establishes the baseline equity that remains the owner's separate property.
 
@@ -290,6 +290,9 @@ Some argue inheritance is "separate property" and shouldn't affect splits. This 
 
 You can make this calculation as simple or complex as your situation requires:
 
+- **Minimum:** Just net income and shared expenses
+- **Add complexity incrementally:** Enable only the features that matter to your situation
+
 **Start simple.** Add complexity only where it matters to your situation and sense of fairness. The goal is equity, not accounting perfection.
 
 ## Important Notes
@@ -314,6 +317,10 @@ You can make this calculation as simple or complex as your situation requires:
 This calculator is particularly valuable for couples establishing financial patterns. Without children, financial contributions are often the primary measure of partnership investment. Getting this right early prevents years of potential resentment. After all, _les bons comptes font les bons amis_.
 
 **Fairness is a feeling, not just a formula.** If the calculator's output doesn't feel right to one or both partners, the formula is wrong for your relationship. Adjust it until it passes your fairness test.
+
+## Development
+
+Built with SvelteKit and TypeScript. Comprehensive test coverage included.
 
 ---
 

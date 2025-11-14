@@ -10,6 +10,7 @@
   let showBreakdown = false;
 
   $: isHighContributor = result.percentage > 50;
+  $: timeframe = $calculatorStore.timeframe;
 
   // Color coding for breakdown items
   function getItemStyle(type: string, category: string): string {
@@ -21,7 +22,6 @@
       case 'deduction':
         return `${baseStyle} text-red-700 border-l-2 border-red-300`;
       case 'imputed':
-        // Different colors for different imputed categories
         const colorMap: Record<string, string> = {
           'inheritance': 'text-blue-700 border-l-2 border-blue-300',
           'advantages': 'text-purple-700 border-l-2 border-purple-300',
@@ -43,31 +43,31 @@
   </h3>
   
   <dl class="space-y-3 text-sm">
-    <!-- Total Capacity First -->
+    <!-- Total Capacity - FIXED: Respects timeframe -->
     <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-200">
       <dt class="text-slate-600 font-medium">Total Capacity</dt>
       <dd class="font-bold text-blue-900 flex items-baseline gap-1">
-        <span>{formatCurrency(result.monthlyCapacity, $calculatorStore.currency, 'monthly')}</span>
-        <span class="text-xs text-slate-500">{getTimeframeLabel('monthly')}</span>
+        <span>{formatCurrency(result.monthlyCapacity, $calculatorStore.currency, timeframe)}</span>
+        <span class="text-xs text-slate-500">{getTimeframeLabel(timeframe)}</span>
       </dd>
     </div>
     
-    <!-- Contribution -->
+    <!-- Contribution - FIXED: Respects timeframe -->
     <div class="flex justify-between items-center p-3 {isHighContributor ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-slate-200'} rounded-lg border">
       <dt class="text-slate-600 font-medium">Contribution</dt>
       <dd class="font-bold {isHighContributor ? 'text-indigo-900' : 'text-slate-700'} flex items-baseline gap-1">
-        <span>{formatCurrency(result.monthlyContribution, $calculatorStore.currency, 'monthly')}</span>
-        <span class="text-xs text-slate-500">{getTimeframeLabel('monthly')}</span>
+        <span>{formatCurrency(result.monthlyContribution, $calculatorStore.currency, timeframe)}</span>
+        <span class="text-xs text-slate-500">{getTimeframeLabel(timeframe)}</span>
         <span class="text-xs font-semibold ml-1">({result.percentage.toFixed(1)}%)</span>
       </dd>
     </div>
     
-    <!-- Disposable Income -->
+    <!-- Disposable Income - FIXED: Respects timeframe -->
     <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg border border-green-200">
       <dt class="text-slate-600 font-medium">Disposable Income</dt>
       <dd class="font-bold text-green-900 flex items-baseline gap-1">
-        <span>{formatCurrency(result.monthlyDisposable, $calculatorStore.currency, 'monthly')}</span>
-        <span class="text-xs text-slate-500">{getTimeframeLabel('monthly')}</span>
+        <span>{formatCurrency(result.monthlyDisposable, $calculatorStore.currency, timeframe)}</span>
+        <span class="text-xs text-slate-500">{getTimeframeLabel(timeframe)}</span>
       </dd>
     </div>
   </dl>
@@ -89,7 +89,7 @@
             <span class="font-medium">{item.label}</span>
             <span class="font-semibold">
               {item.type === 'deduction' ? '-' : '+'}
-              {formatCurrency(Math.abs(item.amount), $calculatorStore.currency, 'monthly')}
+              {formatCurrency(Math.abs(item.amount), $calculatorStore.currency, timeframe)}
             </span>
           </div>
         {/each}

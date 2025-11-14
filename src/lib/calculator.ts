@@ -15,12 +15,44 @@ export interface CalculationResult {
 	}>;
 }
 
-// Calculate monthly income from inheritance using its specific rate
+// Calculate years between two dates
+function getYearsBetween(startDate: string, endDate: Date = new Date()): number {
+	const start = new Date(startDate);
+	const diffTime = Math.abs(endDate.getTime() - start.getTime());
+	const diffYears = diffTime / (1000 * 60 * 60 * 24 * 365.25);
+	return diffYears;
+}
+
+// Calculate compounded value from inheritance date
+function calculateCompoundedValue(
+	initialAmount: number,
+	receivedDate: string,
+	annualRate: number = 5.5
+): number {
+	if (!initialAmount || initialAmount <= 0) return 0;
+	if (!receivedDate) return initialAmount;
+
+	const years = getYearsBetween(receivedDate);
+	const compoundedValue = initialAmount * Math.pow(1 + annualRate / 100, years);
+	return compoundedValue;
+}
+
+// Calculate monthly income from inheritance using its specific rate and date
 function calculateImputedIncome(inheritance: Inheritance): number {
 	if (!inheritance.amount || inheritance.amount <= 0) return 0;
 
+	// First, compound the original amount from the received date
+	const compoundedValue = calculateCompoundedValue(
+		inheritance.amount,
+		inheritance.receivedDate,
+		inheritance.returnRate
+	);
+
+	// Apply discount to the compounded value
 	const discount = Math.max(0, Math.min(100, inheritance.discount)) / 100;
-	const discountedValue = inheritance.amount * (1 - discount);
+	const discountedValue = compoundedValue * (1 - discount);
+
+	// Calculate monthly income from the discounted compounded value
 	const monthlyIncome = (discountedValue * inheritance.returnRate) / (12 * 100);
 
 	return Math.max(0, monthlyIncome);
@@ -56,14 +88,15 @@ function calculatePersonCapacity(
 		});
 	}
 
-	// Direct inheritances (imputed income)
+	// Direct inheritances (imputed income with compounding)
 	person.inheritances.forEach((inheritance, index) => {
 		const monthlyIncome = calculateImputedIncome(inheritance);
 		if (monthlyIncome > 0) {
 			capacity += monthlyIncome;
 			const percentage = 100 - inheritance.discount;
+			const years = getYearsBetween(inheritance.receivedDate);
 			breakdown.push({
-				label: `${inheritance.name || `Inheritance ${index + 1}`} (${percentage}% valued at ${inheritance.returnRate}% compounding rate)`,
+				label: `${inheritance.name || `Inheritance ${index + 1}`} (${percentage}% valued, ${years.toFixed(1)}y @ ${inheritance.returnRate}%)`,
 				amount: monthlyIncome,
 				type: 'imputed',
 				category: 'inheritance'
@@ -80,7 +113,7 @@ function calculatePersonCapacity(
 
 		capacity += monthlyIncome;
 		breakdown.push({
-			label: `Family Advantages (${Math.round((1 - discount) * 100)}% valued at ${rate}% compounding rate)`,
+			label: `Family Advantages (${Math.round((1 - discount) * 100)}% valued @ ${rate}%)`,
 			amount: monthlyIncome,
 			type: 'imputed',
 			category: 'advantages'
@@ -96,7 +129,7 @@ function calculatePersonCapacity(
 
 		capacity += monthlyIncome;
 		breakdown.push({
-			label: `Expected Inheritance (${Math.round((1 - discount) * 100)}% valued at ${rate}% compounding rate)`,
+			label: `Expected Inheritance (${Math.round((1 - discount) * 100)}% valued @ ${rate}%)`,
 			amount: monthlyIncome,
 			type: 'imputed',
 			category: 'future-inheritance'
@@ -184,8 +217,6 @@ export function calculate(state: CalculatorState): CalculationResult[] {
 
 		if (ownerIndex !== -1) {
 			// Owner pays 50% of market rent (their housing consumption cost)
-			// This is already a payment they're making, so we ADD it to their capacity
-			// because it represents housing value they're providing to themselves
 			const ownerRentContribution = monthlyRentValue * 0.5;
 
 			capacities[ownerIndex].monthlyCapacity += ownerRentContribution;
