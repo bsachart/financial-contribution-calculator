@@ -139,9 +139,8 @@ The heavy discount recognizes these advantages are real but not equivalent to ha
    - This represents the value of the property they're providing
    - Increases their financial capacity
 
-2. **Non-owner(s) pay half of market rent**
-   - This is deducted from their capacity
-   - Split equally if multiple non-owners
+2. **Non-owner(s) pay their share of market rent**
+   - Each person pays 1/(number of people) of market rent
    - Represents their housing consumption cost
 
 3. **Shared expenses exclude rent/mortgage**

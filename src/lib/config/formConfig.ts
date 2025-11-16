@@ -173,7 +173,18 @@ export const FIELDS: Record<string, FieldConfig | ((timeframe: string) => FieldC
 	})
 } as const;
 
-export const SECTIONS = [
+export type SectionKey = 'income' | 'inheritance' | 'debt' | 'variable' | 'retirement' | 'housing';
+export type Timeframe = 'monthly' | 'yearly';
+
+// Change SECTIONS to use the new type
+export const SECTIONS: ReadonlyArray<{
+	key: SectionKey;
+	title: string;
+	icon: string;
+	shortDesc: string;
+	description: string;
+	whyMatter: string;
+}> = [
 	{
 		key: 'income',
 		title: 'Net Income',

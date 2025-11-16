@@ -1,67 +1,13 @@
 import { writable, get } from 'svelte/store';
+import type { CalculatorState, Person, Inheritance } from '../domains/financialModels';
+import {
+	createInitialPerson,
+	createInitialInheritance,
+} from '../domains/financialModels';
+import { FinancialCalculatorService } from '../services/financialCalculatorService';
 
-export interface Inheritance {
-	id: string;
-	name: string;
-	amount: number;
-	receivedDate: string; // ISO date string
-	discount: number;
-	returnRate: number;
-}
-
-export interface Person {
-	id: string;
-	name: string;
-	netIncome: number;
-	inheritances: Inheritance[];
-	passiveAdvantages: number;
-	passiveAdvantagesDiscount: number;
-	passiveAdvantagesReturnRate: number;
-	expectedFutureInheritance: number;
-	expectedFutureInheritanceDiscount: number;
-	studentLoans: number;
-	familySupport: number;
-	variableIncome: number;
-	variableIncomeDiscount: number;
-	retirementMatching: number;
-}
-
-export interface CalculatorState {
-	currency: string;
-	sharedExpenses: number;
-	timeframe: 'monthly' | 'yearly';
-	people: Person[];
-	propertyArrangement: 'none' | 'owned';
-	propertyOwnerId: string | null;
-	marketRent: number;
-	activeSection: string | null;
-	enabledSections: string[];
-}
-
-// Constants
-export const ASSUMED_RETURN_RATE = 5.5;
-export const DEFAULT_PASSIVE_ADVANTAGES_RATE = 5.5;
-
-export { SECTIONS } from '$lib/config/formConfig';
-
-function createInitialPerson(name: string): Person {
-	return {
-		id: crypto.randomUUID(),
-		name,
-		netIncome: 0,
-		inheritances: [],
-		passiveAdvantages: 0,
-		passiveAdvantagesDiscount: 70,
-		passiveAdvantagesReturnRate: DEFAULT_PASSIVE_ADVANTAGES_RATE,
-		expectedFutureInheritance: 0,
-		expectedFutureInheritanceDiscount: 50,
-		studentLoans: 0,
-		familySupport: 0,
-		variableIncome: 0,
-		variableIncomeDiscount: 20,
-		retirementMatching: 0
-	};
-}
+// Import UI state store separately (will be created in next step)
+import { uiStore } from './uiStore';
 
 const DEFAULT_STATE: CalculatorState = {
 	currency: 'USD',
@@ -70,9 +16,7 @@ const DEFAULT_STATE: CalculatorState = {
 	people: [createInitialPerson('Partner A'), createInitialPerson('Partner B')],
 	propertyArrangement: 'none',
 	propertyOwnerId: null,
-	marketRent: 0,
-	activeSection: null,
-	enabledSections: ['inheritance', 'debt', 'variable']
+	marketRent: 0
 };
 
 function loadFromStorage(): CalculatorState | null {
@@ -109,8 +53,8 @@ function createStore() {
 	return {
 		subscribe,
 		set,
-		update,
 
+		// Partner management
 		addPartner(name?: string) {
 			update((state) => ({
 				...state,
@@ -136,6 +80,7 @@ function createStore() {
 			}));
 		},
 
+		// Inheritance management
 		addInheritance(personId: string) {
 			update((state) => ({
 				...state,
@@ -145,14 +90,7 @@ function createStore() {
 								...p,
 								inheritances: [
 									...p.inheritances,
-									{
-										id: crypto.randomUUID(),
-										name: `Inheritance ${p.inheritances.length + 1}`,
-										amount: 0,
-										receivedDate: new Date().toISOString().split('T')[0],
-										discount: 0,
-										returnRate: ASSUMED_RETURN_RATE
-									}
+									createInitialInheritance(`Inheritance ${p.inheritances.length + 1}`)
 								]
 							}
 						: p
@@ -190,19 +128,16 @@ function createStore() {
 			}));
 		},
 
+		// UI state management (delegated to uiStore)
 		toggleSection(key: string) {
-			update((state) => ({
-				...state,
-				enabledSections: state.enabledSections.includes(key)
-					? state.enabledSections.filter((k) => k !== key)
-					: [...state.enabledSections, key]
-			}));
+			uiStore.toggleSection(key);
 		},
 
 		setActiveSection(key: string | null) {
-			update((state) => ({ ...state, activeSection: key }));
+			uiStore.setActiveSection(key);
 		},
 
+		// Global settings
 		setTimeframe(timeframe: 'monthly' | 'yearly') {
 			update((state) => {
 				if (state.timeframe === timeframe) return state;
@@ -225,6 +160,39 @@ function createStore() {
 			});
 		},
 
+		updateCurrency(currency: string) {
+			update((state) => ({ ...state, currency }));
+		},
+
+		updateSharedExpenses(expenses: number) {
+			update((state) => ({ ...state, sharedExpenses: Math.max(0, expenses) }));
+		},
+
+		updateMarketRent(rent: number) {
+			update((state) => ({ ...state, marketRent: Math.max(0, rent) }));
+		},
+
+		setPropertyArrangement(arrangement: 'none' | 'owned') {
+			update((state) => ({
+				...state,
+				propertyArrangement: arrangement,
+				propertyOwnerId: arrangement === 'none' ? null : state.propertyOwnerId
+			}));
+		},
+
+		setPropertyOwner(ownerId: string | null) {
+			update((state) => {
+				// Ensure arrangement is 'owned' when setting owner
+				const newArrangement = ownerId ? 'owned' : 'none';
+				return {
+					...state,
+					propertyArrangement: newArrangement,
+					propertyOwnerId: ownerId
+				};
+			});
+		},
+
+		// Data export/import
 		exportState(): string {
 			const state = get({ subscribe });
 			return JSON.stringify(state, null, 2);
@@ -246,6 +214,12 @@ function createStore() {
 
 		resetState() {
 			set(DEFAULT_STATE);
+		},
+
+		// ✅ Expose calculation results (read-only)
+		getResults() {
+			const state = get({ subscribe });
+			return FinancialCalculatorService.calculate(state);
 		}
 	};
 }

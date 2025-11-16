@@ -1,4 +1,4 @@
-import type { CalculatorState, Person, Inheritance } from './stores/calculatorStore';
+import type { CalculatorState, Person, Inheritance } from './domains/financialModels';
 
 export interface CalculationResult {
 	personId: string;
@@ -275,8 +275,8 @@ export function formatCurrency(
 	return new Intl.NumberFormat('en-US', {
 		style: 'currency',
 		currency: currency,
-		maximumFractionDigits: 0,
-		minimumFractionDigits: 0
+		maximumFractionDigits: 2,
+		minimumFractionDigits: 2
 	}).format(isFinite(displayAmount) ? displayAmount : 0);
 }
 

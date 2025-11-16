@@ -1,31 +1,23 @@
 <script lang="ts">
   import { SECTIONS } from '$lib/config/formConfig';
-  import { calculatorStore } from '$lib/stores/calculatorStore';
+  import { uiStore } from '$lib/stores/uiStore';
   import { slide } from 'svelte/transition';
 
-  $: enabledSections = $calculatorStore.enabledSections;
-
-  function isEnabled(key: string) {
-    return enabledSections.includes(key);
-  }
+  // Make isEnabled a reactive function declaration
+  $: isEnabled = (key: string) => $uiStore.enabledSections.includes(key);
+  
+  $: expandedHelp = $uiStore.expandedHelp;
 
   function toggleSection(key: string) {
-    calculatorStore.toggleSection(key);
+    uiStore.toggleSection(key);
   }
 
-  // Track expanded state for "Why this matters"
-  let expandedHelp: Record<string, boolean> = {
-    // inheritance: true,
-    // debt: true,
-    // variable: true,
-    // retirement: true
-  };
-
   function toggleHelp(key: string) {
-    expandedHelp[key] = !expandedHelp[key];
+    uiStore.toggleHelp(key);
   }
 </script>
 
+<!-- Rest of the component remains exactly the same -->
 <div class="card p-4">
   <div class="flex items-center gap-2 mb-4">
     <h3 class="text-sm font-bold text-slate-900">Optional Features</h3>
@@ -42,7 +34,6 @@
           ? 'border-blue-300 bg-blue-50'
           : 'border-slate-200 bg-white hover:border-slate-300'}"
       >
-        <!-- Main Toggle -->
         <div class="p-3">
           <label class="flex items-start gap-3 cursor-pointer">
             <input
@@ -60,7 +51,6 @@
               </div>
               <p class="text-xs text-slate-600 mb-2">{section.shortDesc}</p>
               
-              <!-- IMPROVED: Always visible, expandable help -->
               <button
                 type="button"
                 class="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
@@ -87,7 +77,6 @@
     {/each}
   </div>
 
-  <!-- Quick explanation -->
   <div class="mt-4 pt-4 border-t border-slate-200">
     <p class="text-xs text-slate-600 leading-relaxed">
       <strong class="font-semibold text-slate-700">Tip:</strong> Start with just net income, then enable features that apply to your situation. Property ownership is configured in the settings bar above.
