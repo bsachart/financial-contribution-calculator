@@ -135,27 +135,27 @@ The heavy discount recognizes these advantages are real but not equivalent to ha
 
 ### 6. Pre-Relationship Property Ownership
 
-**What it captures:** One partner owns the residence where both live; the non-owner shouldn't subsidize the owner's equity building or opportunity cost of capital.
+1. **Owner receives full market rent as imputed income**
+   - This represents the value of the property they're providing
+   - Increases their financial capacity
+
+2. **Non-owner(s) pay half of market rent**
+   - This is deducted from their capacity
+   - Split equally if multiple non-owners
+   - Represents their housing consumption cost
+
+3. **Shared expenses exclude rent/mortgage**
+   - Only include utilities, insurance, maintenance
+   - The owner's mortgage is their personal expense
+   - Non-owners pay rent + their share of utilities
+
+This ensures:
+
+- Owner isn't subsidizing non-owner's housing
+- Non-owner only pays for housing consumption, not equity building
+- Fair split of remaining household expenses
 
 **Why it's fair:** The owner gains wealth through appreciation and mortgage paydown—benefits the non-owner doesn't share. Without adjustment, the non-owner effectively helps fund the owner's asset accumulation while receiving none of the long-term value. This ensures the non-owner only pays their share of actual housing consumption, not wealth building.
-
-**How it's calculated:**
-
-**Market Rent Method (Recommended)**
-
-1. Determine **fair market rent** for the property (what a neutral renter would pay)
-2. **Owner pays 50% of market rent** into shared expenses (they're both owner and occupant)
-3. Both partners split all other housing costs proportionally: utilities, maintenance, HOA fees, property taxes (if local custom), insurance
-4. The owner separately pays the actual mortgage (this is their wealth-building activity, not split)
-
-**Example:** Market rent = $3,000/month
-
-- Owner pays: $1,500 (their "rent") + their proportional share of utilities/maintenance
-- Non-owner pays: Their proportional share of utilities/maintenance
-- Owner's mortgage payment: $2,200 (entirely their responsibility)
-- **Shared expenses exclude the rent/mortgage** - only utilities and insurance are split
-
-**Important:** Document the property's value and owner's equity at relationship start. If you separate, this establishes the baseline equity that remains the owner's separate property.
 
 ### Why Market Rent is the Proper Approach
 
@@ -327,11 +327,8 @@ Built with SvelteKit and TypeScript. Comprehensive test coverage included.
 Things to improve:
 
 - Total shared expenses value is different than SHARED EXPENSES.
-- "📊 Calculation Results" is only shown in monthly, not yearly, even though the yearly button is selected.
-- Total shared expenses is also only shown in monthly, not yearly.
 - Yearly / Monthly button sticky? to avoid scrolling up and down
-- Regarding property ownernship, the income from the non-owner, should be added to the owner one to compute the total capacity.
-- It should be made explicit that when the property is owned by one partner, shared expenses do not include the rent/mortgage payments. Only utilities and insurance.
 - Why this matters can be shown next to the features, and always be displayed, not need to click to show or hide.
-- Should "Feature Toggles" be a side block?
-- Add custom favicon (balance).
+- Allow closing "Quick Start Guide" section.
+- Can you make the features card in light blue when they are selected like in your react example, and can you alsomake the Calculation Results cards expand the whole section?
+- Currency selector does not update all the needed fields like the input for the market rent.

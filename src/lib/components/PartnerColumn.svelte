@@ -1,6 +1,7 @@
 <script lang="ts">
   import { calculatorStore } from '$lib/stores/calculatorStore';
   import { FIELDS } from '$lib/config/formConfig';
+  import { getCurrencySymbol } from '$lib/calculator';
   import type { Person } from '$lib/stores/calculatorStore';
   import { slide } from 'svelte/transition';
 
@@ -9,6 +10,9 @@
   $: timeframe = $calculatorStore.timeframe;
   $: enabledSections = $calculatorStore.enabledSections;
   $: netIncomeField = FIELDS.netIncome(timeframe);
+  $: isOwner = $calculatorStore.propertyOwnerId === person.id;
+  $: currency = $calculatorStore.currency;
+  $: currencySymbol = getCurrencySymbol(currency);
 
   function updateField<K extends keyof Person>(key: K, value: Person[K]) {
     calculatorStore.updatePerson(person.id, key, value);
@@ -61,12 +65,27 @@
     {/if}
   </div>
 
+  <!-- Property Owner Badge (if applicable) -->
+  {#if isOwner && $calculatorStore.propertyArrangement === 'owned'}
+    <div class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+      <div class="flex items-center gap-2 text-amber-900">
+        <span class="text-lg">🏠</span>
+        <div class="text-xs">
+          <strong class="font-semibold">Property Owner</strong>
+          <p class="text-amber-800 mt-0.5">
+            Receives ${$calculatorStore.marketRent}{timeframe === 'yearly' ? '/yr' : '/mo'} market rent as imputed income
+          </p>
+        </div>
+      </div>
+    </div>
+  {/if}
+
   <!-- Income Section (always visible) -->
   <div class="mb-6">
     <label for="netIncome-{person.id}" class="block">
       <span class="text-sm font-semibold text-slate-700">{netIncomeField.label}</span>
       <div class="input-group mt-1">
-        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">$</span>
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">{currencySymbol}</span>
         <input
           id="netIncome-{person.id}"
           type="number"
@@ -138,7 +157,7 @@
                     <div>
                       <label for="inheritance-amount-{inheritance.id}" class="text-xs text-slate-600">Amount</label>
                       <div class="input-group mt-1">
-                        <span class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
+                        <span class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">{currencySymbol}</span>
                         <input
                           id="inheritance-amount-{inheritance.id}"
                           type="number"
@@ -155,7 +174,6 @@
                       </div>
                     </div>
 
-                    <!-- NEW: Date Received Field -->
                     <div>
                       <label for="inheritance-date-{inheritance.id}" class="text-xs text-slate-600">Date Received</label>
                       <input
@@ -447,43 +465,6 @@
         {#if retirementFields.retirementMatching.help}
           <p class="text-xs text-slate-500 mt-1">{retirementFields.retirementMatching.help}</p>
         {/if}
-      </label>
-    </div>
-  {/if}
-
-  <!-- Property Ownership Section -->
-  {#if $calculatorStore.propertyArrangement === 'owned' && $calculatorStore.propertyOwnerId === person.id}
-    {@const rentField = FIELDS.marketRent(timeframe)}
-    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
-      <h4 class="font-semibold text-amber-900 mb-3 flex items-center gap-2">
-        <span class="text-lg">🏠</span>
-        Property Ownership
-      </h4>
-      
-      <label for="marketRent-{person.id}" class="block">
-        <span class="text-sm font-medium text-slate-700">{rentField.label}</span>
-        <div class="input-group mt-1">
-          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">$</span>
-          <input
-            id="marketRent-{person.id}"
-            type="number"
-            value={$calculatorStore.marketRent}
-            on:input={(e) => calculatorStore.update(s => ({ 
-              ...s, 
-              marketRent: Number((e.target as HTMLInputElement).value) || 0 
-            }))}
-            placeholder="0"
-            step={rentField.step}
-            class="input-currency text-sm pl-8"
-            min="0"
-          />
-        </div>
-        {#if rentField.help}
-          <p class="text-xs text-slate-500 mt-1">{rentField.help}</p>
-        {/if}
-        <div class="mt-2 p-2 bg-amber-100 rounded text-xs text-amber-800">
-          As the owner, you pay 50% of market rent + your share of other expenses.
-        </div>
       </label>
     </div>
   {/if}

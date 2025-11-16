@@ -210,21 +210,38 @@ export function calculate(state: CalculatorState): CalculationResult[] {
 		};
 	});
 
-	// Property ownership adjustment - FIXED LOGIC
+	// FIXED: Property ownership adjustment
+	// Owner receives full market rent as imputed income
+	// Non-owner(s) pay half of market rent (split equally if multiple non-owners)
 	if (state.propertyArrangement === 'owned' && state.propertyOwnerId && state.marketRent > 0) {
 		const monthlyRentValue = Math.max(0, state.marketRent) * conversionFactor;
 		const ownerIndex = capacities.findIndex((c) => c.personId === state.propertyOwnerId);
 
 		if (ownerIndex !== -1) {
-			// Owner pays 50% of market rent (their housing consumption cost)
-			const ownerRentContribution = monthlyRentValue * 0.5;
-
-			capacities[ownerIndex].monthlyCapacity += ownerRentContribution;
+			// Owner gets full market rent as imputed income
+			capacities[ownerIndex].monthlyCapacity += monthlyRentValue;
 			capacities[ownerIndex].breakdown.push({
-				label: 'Property Ownership (50% of market rent)',
-				amount: ownerRentContribution,
+				label: 'Property Ownership (market rent value)',
+				amount: monthlyRentValue,
 				type: 'imputed',
 				category: 'property'
+			});
+
+			// Non-owner(s) pay half of market rent (deducted from their capacity)
+			const nonOwners = capacities.filter((c) => c.personId !== state.propertyOwnerId);
+			const rentPerNonOwner = (monthlyRentValue * 0.5) / nonOwners.length;
+
+			nonOwners.forEach((nonOwner) => {
+				const nonOwnerIndex = capacities.findIndex((c) => c.personId === nonOwner.personId);
+				if (nonOwnerIndex !== -1) {
+					capacities[nonOwnerIndex].monthlyCapacity -= rentPerNonOwner;
+					capacities[nonOwnerIndex].breakdown.push({
+						label: `Rent to Owner (${(50 / nonOwners.length).toFixed(0)}% of market rent)`,
+						amount: -rentPerNonOwner,
+						type: 'deduction',
+						category: 'property-rent'
+					});
+				}
 			});
 		}
 	}
@@ -265,4 +282,17 @@ export function formatCurrency(
 
 export function getTimeframeLabel(timeframe: 'monthly' | 'yearly'): string {
 	return timeframe === 'yearly' ? '/yr' : '/mo';
+}
+
+export function getCurrencySymbol(currency: string): string {
+	const symbols: Record<string, string> = {
+		USD: '$',
+		EUR: '€',
+		GBP: '£',
+		CHF: 'Fr.',
+		CAD: 'C$',
+		AUD: 'A$',
+		JPY: '¥'
+	};
+	return symbols[currency] || currency;
 }

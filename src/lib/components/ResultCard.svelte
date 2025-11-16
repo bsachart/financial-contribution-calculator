@@ -11,6 +11,7 @@
 
   $: isHighContributor = result.percentage > 50;
   $: timeframe = $calculatorStore.timeframe;
+  $: currency = $calculatorStore.currency;
 
   // Color coding for breakdown items
   function getItemStyle(type: string, category: string): string {
@@ -26,10 +27,12 @@
           'inheritance': 'text-blue-700 border-l-2 border-blue-300',
           'advantages': 'text-purple-700 border-l-2 border-purple-300',
           'future-inheritance': 'text-indigo-700 border-l-2 border-indigo-300',
-          'property': 'text-amber-700 border-l-2 border-amber-300',
-          'default': 'text-orange-700 border-l-2 border-orange-300',
+          'property': 'text-blue-700 border-l-2 border-blue-300', // FIXED: Property is imputed income (blue)
+          'property-rent': 'text-red-700 border-l-2 border-red-300', // Rent paid is deduction (red)
+          'matching': 'text-green-700 border-l-2 border-green-300',
+          'variable': 'text-purple-700 border-l-2 border-purple-300',
         };
-        return `${baseStyle} ${colorMap[category] || colorMap['default']}`;
+        return `${baseStyle} ${colorMap[category] || 'text-blue-700 border-l-2 border-blue-300'}`;
       default:
         return baseStyle;
     }
@@ -43,30 +46,30 @@
   </h3>
   
   <dl class="space-y-3 text-sm">
-    <!-- Total Capacity - FIXED: Respects timeframe -->
+    <!-- Total Capacity - FIXED: Now respects timeframe -->
     <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-200">
       <dt class="text-slate-600 font-medium">Total Capacity</dt>
       <dd class="font-bold text-blue-900 flex items-baseline gap-1">
-        <span>{formatCurrency(result.monthlyCapacity, $calculatorStore.currency, timeframe)}</span>
+        <span>{formatCurrency(result.monthlyCapacity, currency, timeframe)}</span>
         <span class="text-xs text-slate-500">{getTimeframeLabel(timeframe)}</span>
       </dd>
     </div>
     
-    <!-- Contribution - FIXED: Respects timeframe -->
+    <!-- Contribution - FIXED: Now respects timeframe -->
     <div class="flex justify-between items-center p-3 {isHighContributor ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-slate-200'} rounded-lg border">
       <dt class="text-slate-600 font-medium">Contribution</dt>
       <dd class="font-bold {isHighContributor ? 'text-indigo-900' : 'text-slate-700'} flex items-baseline gap-1">
-        <span>{formatCurrency(result.monthlyContribution, $calculatorStore.currency, timeframe)}</span>
+        <span>{formatCurrency(result.monthlyContribution, currency, timeframe)}</span>
         <span class="text-xs text-slate-500">{getTimeframeLabel(timeframe)}</span>
         <span class="text-xs font-semibold ml-1">({result.percentage.toFixed(1)}%)</span>
       </dd>
     </div>
     
-    <!-- Disposable Income - FIXED: Respects timeframe -->
+    <!-- Disposable Income - FIXED: Now respects timeframe -->
     <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg border border-green-200">
       <dt class="text-slate-600 font-medium">Disposable Income</dt>
       <dd class="font-bold text-green-900 flex items-baseline gap-1">
-        <span>{formatCurrency(result.monthlyDisposable, $calculatorStore.currency, timeframe)}</span>
+        <span>{formatCurrency(result.monthlyDisposable, currency, timeframe)}</span>
         <span class="text-xs text-slate-500">{getTimeframeLabel(timeframe)}</span>
       </dd>
     </div>
@@ -89,7 +92,7 @@
             <span class="font-medium">{item.label}</span>
             <span class="font-semibold">
               {item.type === 'deduction' ? '-' : '+'}
-              {formatCurrency(Math.abs(item.amount), $calculatorStore.currency, timeframe)}
+              {formatCurrency(Math.abs(item.amount), currency, timeframe)}
             </span>
           </div>
         {/each}
@@ -107,7 +110,7 @@
         </div>
         <div class="flex items-center gap-1">
           <span class="w-2 h-2 bg-blue-300 rounded"></span>
-          <span>Imputed Income</span>
+          <span>Imputed</span>
         </div>
       </div>
     </div>
