@@ -153,16 +153,10 @@
 
 		<!-- Contribution -->
 		<div
-			class="flex items-center justify-between p-4 {isHighContributor
-				? 'border-indigo-200 bg-indigo-50/80 dark:border-indigo-800/50 dark:bg-indigo-900/20'
-				: 'border-slate-200 bg-slate-50/80 dark:border-slate-700 dark:bg-slate-800/50'} rounded-xl border shadow-sm"
+			class="flex items-center justify-between rounded-xl border border-indigo-200 bg-indigo-50/80 p-4 shadow-sm dark:border-indigo-800/50 dark:bg-indigo-900/20"
 		>
 			<dt class="font-medium text-slate-700 dark:text-slate-300">Contribution</dt>
-			<dd
-				class="font-bold {isHighContributor
-					? 'text-indigo-900 dark:text-indigo-300'
-					: 'text-slate-800 dark:text-slate-200'} flex items-baseline gap-2 text-lg"
-			>
+			<dd class="flex items-baseline gap-2 text-lg font-bold text-indigo-900 dark:text-indigo-300">
 				<span>{formatCurrency(result.monthlyContribution, currency, timeframe)}</span>
 				<span class="rounded-md bg-white/50 px-2 py-0.5 text-xs font-bold dark:bg-black/20">
 					{result.percentage.toFixed(1)}%

@@ -17,7 +17,6 @@
 	$: enabledSections = $uiStore.enabledSections;
 
 	$: isOwner = $calculatorStore.propertyOwnerId === person.id;
-	$: currency = $calculatorStore.currency;
 	$: currencySymbol = getCurrencySymbol(currency);
 
 	function updateField<K extends keyof Person>(key: K, value: Person[K]) {

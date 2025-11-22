@@ -202,22 +202,22 @@ export class CalculationService {
 		const ownerName = state.people.find((p) => p.id === state.propertyOwnerId)?.name || 'Owner';
 
 		return capacities.map((cap) => {
-			// Owner: Add rent paid by non-owners as imputed income
-			// (This represents the cash/value flow from others to the owner)
+			// Owner: Add FULL market rent as imputed income
+			// (User requested full value to be reflected in capacity)
 			if (cap.personId === state.propertyOwnerId) {
-				const rentFromOthers = rentPerPerson * nonOwners.length;
+				const fullRent = monthlyRentValue;
 				const newBreakdown = [
 					...cap.breakdown,
 					{
-						label: `Property Ownership (Rent from ${nonOwners.map((p) => p.name).join(', ')})`,
-						amount: rentFromOthers,
+						label: `Property Value (Fair Market Rent)`,
+						amount: fullRent,
 						type: 'imputed' as const,
 						category: 'property'
 					}
 				];
 				return {
 					...cap,
-					monthlyCapacity: cap.monthlyCapacity + rentFromOthers,
+					monthlyCapacity: cap.monthlyCapacity + fullRent,
 					breakdown: newBreakdown
 				};
 			}

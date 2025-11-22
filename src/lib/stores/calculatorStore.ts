@@ -1,7 +1,7 @@
 import { writable, get } from 'svelte/store';
 import type { CalculatorState, Person, Inheritance } from '../domains/financialModels';
 import { createInitialPerson, createInitialInheritance } from '../domains/financialModels';
-import { CalculationService } from '../services/calculationService.ts';
+import { CalculationService } from '../services/calculationService';
 
 // Import UI state store separately
 import { uiStore } from './uiStore';

@@ -14,7 +14,7 @@
 	// This function finds the specific rent payment from the calculation breakdown
 	function getRentPayment(personId: string): number {
 		const result = results.find((r) => r.personId === personId);
-		const rentItem = result?.breakdown.find((item) => item.category === 'property-rent');
+		const rentItem = result?.breakdown?.find((item) => item.category === 'property-rent');
 		return rentItem ? Math.abs(rentItem.amount) : 0;
 	}
 
@@ -22,7 +22,7 @@
 	$: totalRentReceived = nonOwners.reduce((sum, p) => sum + getRentPayment(p.id), 0);
 </script>
 
-<div class="mt-4" transition:slide>
+<div transition:slide>
 	<div
 		class="relative rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700"
 	>
@@ -46,19 +46,6 @@
 						<div class="font-bold text-slate-900 dark:text-white">{nonOwner.name}</div>
 						<div class="text-xs text-slate-500 dark:text-slate-400">Non-Owner</div>
 
-						<!-- Arrow to House -->
-						<svg
-							class="absolute top-1/2 -right-12 hidden h-8 w-12 -translate-y-1/2 text-slate-300 md:block"
-							viewBox="0 0 48 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						>
-							<path d="M4 12h36m-6-6l6 6-6 6" />
-						</svg>
-
 						<div
 							class="mt-2 rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700 dark:bg-red-900/30 dark:text-red-300"
 						>
@@ -71,26 +58,23 @@
 				{/each}
 			</div>
 
-			<!-- The Property (Center) -->
-			<div class="z-10 flex flex-col items-center">
-				<div
-					class="relative flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 shadow-md ring-4 ring-white"
-				>
-					<span class="text-4xl">🏠</span>
-					<div
-						class="absolute -bottom-3 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm"
+			<!-- Flow Arrow -->
+			<div
+				class="flex flex-col items-center justify-center px-4 text-slate-400 dark:text-slate-500"
+			>
+				<div class="flex flex-col items-center gap-2">
+					<span class="text-xs font-bold tracking-wider uppercase">Rent</span>
+					<svg
+						class="h-8 w-12 text-slate-300 dark:text-slate-600"
+						viewBox="0 0 48 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
 					>
-						Market Rent
-					</div>
-				</div>
-				<div class="mt-3 text-center">
-					<div class="text-lg font-bold text-amber-900 dark:text-amber-400">
-						{formatCurrency(monthlyMarketRent, currency, state.timeframe)}/{state.timeframe ===
-						'yearly'
-							? 'yr'
-							: 'mo'}
-					</div>
-					<div class="text-xs text-amber-700 dark:text-amber-500">Total Value</div>
+						<path d="M4 12h36m-6-6l6 6-6 6" />
+					</svg>
 				</div>
 			</div>
 
@@ -100,19 +84,6 @@
 					<div
 						class="group relative flex flex-col items-center rounded-lg border-2 border-amber-200 bg-amber-50 p-4 transition-all hover:border-amber-400 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:hover:border-amber-500 dark:hover:bg-amber-900/40"
 					>
-						<!-- Arrow from House -->
-						<svg
-							class="absolute top-1/2 -left-12 hidden h-8 w-12 -translate-y-1/2 text-amber-300 md:block"
-							viewBox="0 0 48 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						>
-							<path d="M4 12h36m-6-6l6 6-6 6" />
-						</svg>
-
 						<div
 							class="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-amber-200 text-xl shadow-sm group-hover:bg-amber-300 dark:bg-amber-800 dark:group-hover:bg-amber-700"
 						>
@@ -130,7 +101,20 @@
 								state.timeframe
 							)}/{state.timeframe === 'yearly' ? 'yr' : 'mo'}
 						</div>
-						<div class="mt-1 text-[10px] text-slate-500">(From non-owners)</div>
+
+						<div class="mt-3 border-t border-amber-200 pt-2 text-center dark:border-amber-800/50">
+							<div
+								class="text-[10px] tracking-wide text-amber-800/70 uppercase dark:text-amber-500"
+							>
+								Fair market rent
+							</div>
+							<div class="text-xs font-bold text-amber-900 dark:text-amber-400">
+								{formatCurrency(monthlyMarketRent, currency, state.timeframe)}/{state.timeframe ===
+								'yearly'
+									? 'yr'
+									: 'mo'}
+							</div>
+						</div>
 					</div>
 				{/if}
 			</div>

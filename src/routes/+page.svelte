@@ -4,14 +4,14 @@
 	import { uiStore } from '$lib/stores/uiStore';
 	import { CalculationService } from '$lib/services/calculationService';
 	import FeatureToggles from '$lib/components/FeatureToggles.svelte';
-	import PartnerColumn from '$lib/components/PartnerColumn.svelte';
-	import ResultCard from '$lib/components/ResultCard.svelte';
-	import CurrencySelector from '$lib/components/CurrencySelector.svelte';
-	import MoneyInput from '$lib/components/MoneyInput.svelte';
+	import PartnerCard from '$lib/components/PartnerCard.svelte';
+	import Header from '$lib/components/Header.svelte';
+	import GlobalSettings from '$lib/components/GlobalSettings.svelte';
+	import QuickStartGuide from '$lib/components/QuickStartGuide.svelte';
+	import ResultsPanel from '$lib/components/ResultsPanel.svelte';
+	import FairnessTest from '$lib/components/FairnessTest.svelte';
 	import PropertyArrangement from '$lib/components/PropertyArrangement.svelte';
 	import { fade, fly } from 'svelte/transition';
-
-	import { formatCurrency, getTimeframeLabel, getCurrencySymbol } from '$lib/utils/formatters';
 
 	let fileInput: HTMLInputElement;
 	let showImportSuccess = false;
@@ -27,18 +27,6 @@
 	$: sharedExpensesMonthly = $calculatorStore.sharedExpenses * conversionFactor;
 	$: totalCapacity = results.reduce((sum, r) => sum + r.monthlyCapacity, 0);
 	$: remainingCapacity = totalCapacity - sharedExpensesMonthly;
-	$: currencySymbol = getCurrencySymbol($calculatorStore.currency);
-
-	function toggleDarkMode() {
-		darkMode = !darkMode;
-		if (darkMode) {
-			document.documentElement.classList.add('dark');
-			localStorage.setItem('theme', 'dark');
-		} else {
-			document.documentElement.classList.remove('dark');
-			localStorage.setItem('theme', 'light');
-		}
-	}
 
 	function handleExport() {
 		const data = calculatorStore.exportState();
@@ -46,7 +34,6 @@
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.href = url;
-		// Use a simpler date format to avoid potential browser/OS issues with colons or other characters
 		const date = new Date().toISOString().split('T')[0];
 		a.download = `financial-calculator-${date}.json`;
 		document.body.appendChild(a);
@@ -55,8 +42,8 @@
 		URL.revokeObjectURL(url);
 	}
 
-	function handleImport(event: Event) {
-		const file = (event.target as HTMLInputElement).files?.[0];
+	function handleImport(event: CustomEvent<FileList>) {
+		const file = event.detail?.[0];
 		if (!file) return;
 
 		const reader = new FileReader();
@@ -93,7 +80,6 @@
 	onMount(() => {
 		calculatorStore.setActiveSection('inheritance');
 
-		// Check for saved theme preference or system preference
 		const savedTheme = localStorage.getItem('theme');
 		const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
@@ -108,82 +94,13 @@
 </script>
 
 <div class="min-h-screen transition-colors duration-300">
-	<!-- Header -->
-	<header
-		class="sticky top-0 z-50 border-b border-white/20 bg-white/80 shadow-sm backdrop-blur-md dark:bg-slate-900/80"
-	>
-		<div class="mx-auto max-w-7xl px-4 py-4 sm:px-6">
-			<div class="flex flex-wrap items-center justify-between gap-4">
-				<div class="flex items-center gap-3">
-					<div
-						class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-900 shadow-sm dark:bg-slate-800 dark:text-white"
-					>
-						<span class="text-xl">⚖️</span>
-					</div>
-					<div>
-						<h1 class="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-white">
-							FairShare
-						</h1>
-						<p class="text-xs font-medium text-slate-500 dark:text-slate-400">
-							Financial Equity Calculator
-						</p>
-					</div>
-				</div>
-
-				<div class="flex flex-wrap items-center gap-3">
-					<!-- Dark Mode Toggle -->
-					<button
-						on:click={toggleDarkMode}
-						class="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-						title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-					>
-						{#if darkMode}
-							🌙
-						{:else}
-							☀️
-						{/if}
-					</button>
-
-					<div class="mx-1 h-6 w-px bg-slate-200 dark:bg-slate-700"></div>
-
-					<!-- Export/Import/Reset Controls -->
-					<div class="flex items-center gap-2">
-						<button
-							type="button"
-							on:click={handleExport}
-							class="btn-secondary px-3 py-1.5 text-xs"
-							title="Export configuration"
-						>
-							📥 Export
-						</button>
-						<input
-							bind:this={fileInput}
-							type="file"
-							accept=".json"
-							on:change={handleImport}
-							class="hidden"
-							id="import-file"
-						/>
-						<label
-							for="import-file"
-							class="btn-secondary cursor-pointer px-3 py-1.5 text-xs"
-							title="Import configuration"
-						>
-							📤 Import
-						</label>
-						<button
-							type="button"
-							on:click={resetAll}
-							class="btn-danger px-3 py-1.5 text-xs"
-							title="Reset all data"
-						>
-							🗑️ Reset
-						</button>
-					</div>
-				</div>
-			</div>
-		</div>
-	</header>
+	<Header
+		bind:darkMode
+		bind:fileInput
+		on:export={handleExport}
+		on:import={handleImport}
+		on:reset={resetAll}
+	/>
 
 	<main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
 		<!-- Import/Export Messages -->
@@ -207,68 +124,7 @@
 			</div>
 		{/if}
 
-		<!-- Global Settings Bar -->
-		<div class="glass-card relative z-[100] mb-8 p-1">
-			<div class="grid grid-cols-1 items-center gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4">
-				<!-- Currency -->
-				<div class="relative z-20">
-					<label class="block">
-						<span class="label-text">Currency</span>
-						<CurrencySelector
-							value={$calculatorStore.currency}
-							on:change={(e) => calculatorStore.updateCurrency(e.detail)}
-						/>
-					</label>
-				</div>
-
-				<!-- Shared Expenses -->
-				<div>
-					<MoneyInput
-						id="shared-expenses"
-						label="Shared Expenses"
-						value={$calculatorStore.sharedExpenses}
-						onChange={(val) =>
-							calculatorStore.update((s) => ({
-								...s,
-								sharedExpenses: Math.max(0, val)
-							}))}
-						min={0}
-					/>
-				</div>
-
-				<!-- Timeframe -->
-				<div>
-					<label class="block">
-						<span class="label-text">Timeframe</span>
-						<div class="relative flex w-full rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
-							<button
-								type="button"
-								class="w-full rounded-lg px-3 py-2 text-xs font-semibold transition-all {$calculatorStore.timeframe ===
-								'monthly'
-									? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
-									: 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}"
-								on:click={() => calculatorStore.setTimeframe('monthly')}
-							>
-								Monthly
-							</button>
-							<button
-								type="button"
-								class="w-full rounded-lg px-3 py-2 text-xs font-semibold transition-all {$calculatorStore.timeframe ===
-								'yearly'
-									? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
-									: 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}"
-								on:click={() => calculatorStore.setTimeframe('yearly')}
-							>
-								Yearly
-							</button>
-						</div>
-					</label>
-				</div>
-
-				<!-- Housing Toggle (only) -->
-				<PropertyArrangement mode="toggle-only" bind:showPropertyExplanation />
-			</div>
-		</div>
+		<GlobalSettings bind:showPropertyExplanation />
 
 		<!-- Property Ownership Details (when enabled) -->
 		{#if $calculatorStore.propertyArrangement === 'owned'}
@@ -277,49 +133,7 @@
 			</div>
 		{/if}
 
-		<!-- Instructions -->
-		{#if showQuickStart}
-			<div
-				class="relative mb-8 rounded-2xl border border-blue-200/50 bg-blue-50/50 p-6 backdrop-blur-sm dark:border-blue-800/30 dark:bg-blue-900/10"
-				in:fade
-			>
-				<button
-					on:click={() => (showQuickStart = false)}
-					class="absolute top-4 right-4 text-blue-400 transition-colors hover:text-blue-600 dark:hover:text-blue-300"
-					aria-label="Close quick start guide"
-				>
-					✕
-				</button>
-				<div class="flex items-start gap-4">
-					<div
-						class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
-					>
-						💡
-					</div>
-					<div>
-						<h3 class="mb-2 text-base font-bold text-blue-900 dark:text-blue-300">
-							Quick Start Guide
-						</h3>
-						<ol
-							class="list-inside list-decimal space-y-1 text-sm text-blue-800 dark:text-blue-200/80"
-						>
-							<li>
-								Set <strong>timeframe</strong> (monthly/yearly) - this affects all inputs below
-							</li>
-							<li>
-								Enter <strong>shared expenses</strong> (excludes rent if one partner owns property)
-							</li>
-							<li>If applicable, set <strong>property ownership</strong> and market rent</li>
-							<li>
-								Enable <strong>optional features</strong> in the sidebar to account for inheritance,
-								loans, etc.
-							</li>
-							<li>Fill in <strong>income details</strong> for each partner</li>
-						</ol>
-					</div>
-				</div>
-			</div>
-		{/if}
+		<QuickStartGuide bind:show={showQuickStart} />
 
 		<!-- Main Grid Layout -->
 		<div class="grid grid-cols-1 gap-8 lg:grid-cols-[320px,1fr]">
@@ -327,20 +141,7 @@
 			<aside class="space-y-6">
 				<div class="space-y-6">
 					<FeatureToggles />
-
-					<!-- Fairness Test -->
-					<div class="glass-card border-l-4 border-l-amber-400 p-6 dark:border-l-amber-500">
-						<h4 class="mb-3 text-sm font-bold text-slate-900 dark:text-white">The fairness test</h4>
-						<blockquote
-							class="mb-3 text-sm leading-relaxed text-slate-600 italic dark:text-slate-300"
-						>
-							"Would this arrangement feel fair if we separated tomorrow?"
-						</blockquote>
-						<p class="text-xs text-slate-500 dark:text-slate-400">
-							If the answer is no, adjust the parameters until both partners feel the arrangement is
-							equitable.
-						</p>
-					</div>
+					<FairnessTest />
 				</div>
 			</aside>
 
@@ -359,99 +160,18 @@
 
 				<div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
 					{#each $calculatorStore.people as person (person.id)}
-						<PartnerColumn {person} currency={$calculatorStore.currency} />
+						<PartnerCard {person} currency={$calculatorStore.currency} />
 					{/each}
 				</div>
 			</div>
 		</div>
 
-		<!-- Results Panel -->
-		{#if results.length > 0 && sharedExpensesMonthly > 0}
-			<div class="mt-12" in:fade>
-				<div class="mb-6 flex items-center gap-4">
-					<h2 class="text-2xl font-bold text-slate-900 dark:text-white">📊 Calculation Results</h2>
-					<div class="h-px flex-1 bg-slate-200 dark:bg-slate-700"></div>
-				</div>
-
-				<div class="glass-card p-8">
-					<div class="grid grid-cols-1 gap-8 md:grid-cols-2">
-						{#each results as result}
-							{@const person = $calculatorStore.people.find((p) => p.id === result.personId)}
-							{#if person}
-								<ResultCard {result} personName={person.name} />
-							{/if}
-						{/each}
-					</div>
-
-					<div class="mt-8 border-t border-slate-200 pt-8 dark:border-slate-700">
-						<div class="grid grid-cols-1 gap-8 text-center sm:grid-cols-3">
-							<div
-								class="group rounded-xl p-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
-							>
-								<div class="mb-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-									Combined Capacity
-								</div>
-								<div
-									class="text-2xl font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400"
-								>
-									{formatCurrency(totalCapacity, $calculatorStore.currency, timeframe)}
-								</div>
-								<div class="mt-1 text-xs text-slate-400 dark:text-slate-500">
-									{getTimeframeLabel(timeframe)}
-								</div>
-							</div>
-
-							<div
-								class="group rounded-xl p-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
-							>
-								<div class="mb-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-									Shared Expenses
-								</div>
-								<div class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-									{formatCurrency(sharedExpensesMonthly, $calculatorStore.currency, timeframe)}
-								</div>
-								<div class="mt-1 text-xs text-slate-400 dark:text-slate-500">
-									{getTimeframeLabel(timeframe)}
-								</div>
-							</div>
-
-							<div
-								class="group rounded-xl p-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
-							>
-								<div class="mb-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-									{remainingCapacity >= 0 ? 'Remaining Buffer' : 'Deficit'}
-								</div>
-								<div
-									class="text-2xl font-bold {remainingCapacity >= 0
-										? 'text-emerald-600 dark:text-emerald-400'
-										: 'text-red-600 dark:text-red-400'}"
-								>
-									{formatCurrency(remainingCapacity, $calculatorStore.currency, timeframe)}
-								</div>
-								<div class="mt-1 text-xs text-slate-400 dark:text-slate-500">
-									{getTimeframeLabel(timeframe)}
-								</div>
-							</div>
-						</div>
-
-						{#if remainingCapacity < 0}
-							<div
-								class="mt-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20"
-							>
-								<span class="text-xl">⚠️</span>
-								<p class="text-sm text-red-800 dark:text-red-300">
-									<strong>Warning:</strong> Shared expenses exceed your combined financial capacity.
-									You are currently over budget by {formatCurrency(
-										Math.abs(remainingCapacity),
-										$calculatorStore.currency,
-										timeframe
-									)}.
-								</p>
-							</div>
-						{/if}
-					</div>
-				</div>
-			</div>
-		{/if}
+		<ResultsPanel
+			{results}
+			{sharedExpensesMonthly}
+			{totalCapacity}
+			{remainingCapacity}
+			{timeframe}
+		/>
 	</main>
 </div>
