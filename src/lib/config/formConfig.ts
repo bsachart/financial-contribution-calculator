@@ -14,7 +14,7 @@ export const DEFAULT_UNCERTAINTY_DISCOUNT = 20;
 
 export const FIELDS: Record<string, FieldConfig | ((timeframe: string) => FieldConfig)> = {
 	netIncome: (timeframe) => ({
-		label: `Net ${timeframe === 'yearly' ? 'Yearly' : 'Monthly'} Income (After Tax)`,
+		label: `Net ${timeframe === 'yearly' ? 'yearly' : 'monthly'} income (after tax)`,
 		type: 'currency',
 		placeholder: '0',
 		help: "Your actual take-home pay. This is what's truly available to spend.",
@@ -25,7 +25,7 @@ export const FIELDS: Record<string, FieldConfig | ((timeframe: string) => FieldC
 
 	// Inheritance fields
 	inheritanceName: {
-		label: 'Inheritance Name',
+		label: 'Inheritance name',
 		type: 'text',
 		placeholder: 'e.g., Grandparent Estate',
 		help: 'Give this inheritance a meaningful name',
@@ -52,7 +52,7 @@ export const FIELDS: Record<string, FieldConfig | ((timeframe: string) => FieldC
 	},
 
 	inheritanceReturnRate: {
-		label: 'Expected Annual Return %',
+		label: 'Expected annual return %',
 		type: 'number',
 		min: 0,
 		max: 20,
@@ -62,7 +62,7 @@ export const FIELDS: Record<string, FieldConfig | ((timeframe: string) => FieldC
 	},
 
 	passiveAdvantages: {
-		label: 'Lifetime Passive Advantages Value',
+		label: 'Lifetime passive advantages value',
 		type: 'currency',
 		placeholder: 'Estimated total value',
 		help: 'Education without debt, healthcare, tutoring, career support.',
@@ -81,7 +81,7 @@ export const FIELDS: Record<string, FieldConfig | ((timeframe: string) => FieldC
 	},
 
 	passiveAdvantagesReturnRate: {
-		label: 'Expected Annual Return %',
+		label: 'Expected annual return %',
 		type: 'number',
 		min: 0,
 		max: 20,
@@ -91,7 +91,7 @@ export const FIELDS: Record<string, FieldConfig | ((timeframe: string) => FieldC
 	},
 
 	expectedFutureInheritance: {
-		label: 'Expected Future Inheritance',
+		label: 'Expected future inheritance',
 		type: 'currency',
 		placeholder: 'Expected amount',
 		help: 'Likely inheritance based on family wealth.',
@@ -100,7 +100,7 @@ export const FIELDS: Record<string, FieldConfig | ((timeframe: string) => FieldC
 	},
 
 	expectedFutureInheritanceDiscount: {
-		label: 'Uncertainty Discount %',
+		label: 'Uncertainty discount %',
 		type: 'number',
 		min: 0,
 		max: 100,
@@ -111,7 +111,7 @@ export const FIELDS: Record<string, FieldConfig | ((timeframe: string) => FieldC
 
 	// Debt fields
 	studentLoans: (timeframe) => ({
-		label: `Student Loan Payments (${timeframe === 'yearly' ? 'Yearly' : 'Monthly'})`,
+		label: `Student loan payments (${timeframe === 'yearly' ? 'yearly' : 'monthly'})`,
 		type: 'currency',
 		placeholder: '0',
 		help: `${timeframe === 'yearly' ? 'Annual' : 'Monthly'} payments that reduce your available income.`,
@@ -121,7 +121,7 @@ export const FIELDS: Record<string, FieldConfig | ((timeframe: string) => FieldC
 	}),
 
 	familySupport: (timeframe) => ({
-		label: `Family Support Obligations (${timeframe === 'yearly' ? 'Yearly' : 'Monthly'})`,
+		label: `Family support obligations (${timeframe === 'yearly' ? 'yearly' : 'monthly'})`,
 		type: 'currency',
 		placeholder: '0',
 		help: 'Support for parents, siblings, or relatives. This is deducted from capacity.',
@@ -132,7 +132,7 @@ export const FIELDS: Record<string, FieldConfig | ((timeframe: string) => FieldC
 
 	// Variable income
 	variableIncome: {
-		label: 'Variable Income (Bonus/Commission)',
+		label: 'Variable income (bonus/commission)',
 		type: 'currency',
 		placeholder: '0',
 		help: 'Expected annual amount from bonuses, commissions, or freelance work.',
@@ -141,7 +141,7 @@ export const FIELDS: Record<string, FieldConfig | ((timeframe: string) => FieldC
 	},
 
 	variableIncomeDiscount: {
-		label: 'Uncertainty Discount %',
+		label: 'Uncertainty discount %',
 		type: 'number',
 		min: 0,
 		max: 80,
@@ -152,7 +152,7 @@ export const FIELDS: Record<string, FieldConfig | ((timeframe: string) => FieldC
 
 	// Retirement matching (instead of contributions)
 	retirementMatching: (timeframe) => ({
-		label: `Employer Retirement Matching (${timeframe === 'yearly' ? 'Yearly' : 'Monthly'})`,
+		label: `Employer retirement matching (${timeframe === 'yearly' ? 'yearly' : 'monthly'})`,
 		type: 'currency',
 		placeholder: '0',
 		help: 'Free money from employer matching. This increases your capacity.',
@@ -163,7 +163,7 @@ export const FIELDS: Record<string, FieldConfig | ((timeframe: string) => FieldC
 
 	// Housing
 	marketRent: (timeframe) => ({
-		label: `Fair Market Rent (${timeframe === 'yearly' ? 'Yearly' : 'Monthly'})`,
+		label: `Fair market rent (${timeframe === 'yearly' ? 'yearly' : 'monthly'})`,
 		type: 'currency',
 		placeholder: '0',
 		help: 'What would this property rent for on the open market?',
@@ -187,7 +187,7 @@ export const SECTIONS: ReadonlyArray<{
 }> = [
 	{
 		key: 'income',
-		title: 'Net Income',
+		title: 'Net income',
 		icon: '💰',
 		shortDesc: 'After-tax earnings',
 		description: 'The foundation of all calculations. Use after-tax income for accuracy.',
@@ -196,7 +196,7 @@ export const SECTIONS: ReadonlyArray<{
 	},
 	{
 		key: 'inheritance',
-		title: 'Inheritance & Advantages',
+		title: 'Inheritance & advantages',
 		icon: '🏛️',
 		shortDesc: 'Past inheritances & advantages',
 		description: 'Direct cash inheritances and lifetime advantages like debt-free education.',
@@ -205,7 +205,7 @@ export const SECTIONS: ReadonlyArray<{
 	},
 	{
 		key: 'debt',
-		title: 'Obligations & Debt',
+		title: 'Obligations & debt',
 		icon: '💳',
 		shortDesc: 'Student loans & support',
 		description: 'Student loans and family support reduce available income.',
@@ -214,7 +214,7 @@ export const SECTIONS: ReadonlyArray<{
 	},
 	{
 		key: 'variable',
-		title: 'Variable Income',
+		title: 'Variable income',
 		icon: '📈',
 		shortDesc: 'Bonuses & commissions',
 		description: 'Income that is not guaranteed, discounted for uncertainty.',
@@ -223,7 +223,7 @@ export const SECTIONS: ReadonlyArray<{
 	},
 	{
 		key: 'retirement',
-		title: 'Retirement Savings',
+		title: 'Retirement savings',
 		icon: '💼',
 		shortDesc: 'Employer matching',
 		description: 'Free money from employer retirement plan matching.',
@@ -232,7 +232,7 @@ export const SECTIONS: ReadonlyArray<{
 	},
 	{
 		key: 'housing',
-		title: 'Property Ownership',
+		title: 'Property ownership',
 		icon: '🏠',
 		shortDesc: 'Home ownership',
 		description: 'If one partner owns the home, they should pay 50% of market rent.',

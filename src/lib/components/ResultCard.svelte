@@ -113,7 +113,10 @@
 	></div>
 
 	<h3 class="mb-6 flex items-center gap-3 text-xl font-bold text-slate-900 dark:text-white">
-		<span class="relative flex h-3 w-3">
+		<span
+			class="relative flex h-3 w-3"
+			title={isHighContributor ? 'High contributor (>50%)' : 'Contributor'}
+		>
 			<span
 				class="absolute inline-flex h-full w-full animate-ping rounded-full {isHighContributor
 					? 'bg-indigo-400'
@@ -139,7 +142,7 @@
 		<div
 			class="flex items-center justify-between rounded-xl border border-blue-100 bg-blue-50/50 p-4 dark:border-blue-800/30 dark:bg-blue-900/10"
 		>
-			<dt class="font-medium text-slate-700 dark:text-slate-300">Total Capacity</dt>
+			<dt class="font-medium text-slate-700 dark:text-slate-300">Total capacity</dt>
 			<dd class="flex items-baseline gap-1 text-lg font-bold text-blue-900 dark:text-blue-300">
 				<span>{formatCurrency(result.monthlyCapacity, currency, timeframe)}</span>
 				<span class="text-xs font-normal text-slate-600 dark:text-slate-400"
@@ -171,7 +174,7 @@
 		<div
 			class="flex items-center justify-between rounded-xl border border-green-100 bg-green-50/50 p-4 dark:border-green-800/30 dark:bg-green-900/10"
 		>
-			<dt class="font-medium text-slate-700 dark:text-slate-300">Disposable Income</dt>
+			<dt class="font-medium text-slate-700 dark:text-slate-300">Disposable income</dt>
 			<dd class="flex items-baseline gap-1 text-lg font-bold text-green-900 dark:text-green-300">
 				<span>{formatCurrency(result.monthlyDisposable, currency, timeframe)}</span>
 				<span class="text-xs font-normal text-slate-600 dark:text-slate-400"
@@ -187,7 +190,7 @@
 		class="mt-6 flex w-full items-center justify-between border-t border-slate-200 pt-4 text-xs font-bold tracking-wider text-slate-600 uppercase transition-colors hover:text-indigo-700 dark:border-slate-700 dark:text-slate-400 dark:hover:text-indigo-300"
 	>
 		<span class="flex items-center gap-2"
-			>{showBreakdown ? 'Hide' : 'Show'} Breakdown
+			>{showBreakdown ? 'Hide' : 'Show'} details
 			{#if hasPropertyItems}
 				<span
 					class="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
@@ -218,11 +221,11 @@
 			>
 				<div class="flex items-center gap-1.5">
 					<span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-					<span>Regular Income</span>
+					<span>Regular income</span>
 				</div>
 				<div class="flex items-center gap-1.5">
 					<span class="h-2 w-2 rounded-full bg-blue-400"></span>
-					<span>Imputed Income</span>
+					<span>Imputed income</span>
 				</div>
 				<div class="flex items-center gap-1.5">
 					<span class="h-2 w-2 rounded-full bg-rose-400"></span>

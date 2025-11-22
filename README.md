@@ -320,3 +320,9 @@ This calculator is particularly valuable for couples establishing financial patt
 ## Development
 
 Built with SvelteKit and TypeScript. Comprehensive test coverage included.
+
+
+ISSUES
+
+- Currency symbol in MoneyInput component does not have enough contrast: dark on dark or light on light.
+- Currency selector expanded card is below "Who owns the property" section. Z-index issue.

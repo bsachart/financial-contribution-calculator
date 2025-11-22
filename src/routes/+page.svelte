@@ -16,6 +16,7 @@
 	let showImportSuccess = false;
 	let showImportError = false;
 	let showQuickStart = true;
+	let showPropertyExplanation = true;
 	let darkMode = false;
 
 	$: results = CalculationService.calculate($calculatorStore);
@@ -108,7 +109,7 @@
 <div class="min-h-screen transition-colors duration-300">
 	<!-- Header -->
 	<header
-		class="sticky top-0 z-50 border-b border-white/20 bg-white/95 shadow-sm backdrop-blur-md dark:bg-slate-900/95"
+		class="sticky top-0 z-50 border-b border-white/20 bg-white/80 shadow-sm backdrop-blur-md dark:bg-slate-900/80"
 	>
 		<div class="mx-auto max-w-7xl px-4 py-4 sm:px-6">
 			<div class="flex flex-wrap items-center justify-between gap-4">
@@ -206,7 +207,7 @@
 		{/if}
 
 		<!-- Global Settings Bar -->
-		<div class="glass-card sticky top-[88px] z-40 mb-8 p-1">
+		<div class="glass-card z-[100] mb-8 p-1">
 			<div class="grid grid-cols-1 items-center gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4">
 				<!-- Currency -->
 				<div>
@@ -225,7 +226,7 @@
 						<span class="label-text">Shared Expenses</span>
 						<div class="input-group relative">
 							<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-								<span class="font-medium text-slate-500 dark:text-slate-400">{currencySymbol}</span>
+								<span class="font-medium text-slate-500 dark:text-slate-200">{currencySymbol}</span>
 							</div>
 							<input
 								type="number"
@@ -272,10 +273,17 @@
 					</label>
 				</div>
 
-				<!-- Property Arrangement -->
-				<PropertyArrangement />
+				<!-- Housing Toggle (only) -->
+				<PropertyArrangement mode="toggle-only" bind:showPropertyExplanation />
 			</div>
 		</div>
+
+		<!-- Property Ownership Details (when enabled) -->
+		{#if $calculatorStore.propertyArrangement === 'owned'}
+			<div class="glass-card mb-8 p-6" in:fade>
+				<PropertyArrangement mode="details-only" bind:showPropertyExplanation />
+			</div>
+		{/if}
 
 		<!-- Instructions -->
 		{#if showQuickStart}
@@ -330,11 +338,7 @@
 
 					<!-- Fairness Test -->
 					<div class="glass-card border-l-4 border-l-amber-400 p-6 dark:border-l-amber-500">
-						<h4
-							class="mb-3 text-sm font-bold tracking-wider text-slate-900 uppercase dark:text-white"
-						>
-							The Fairness Test
-						</h4>
+						<h4 class="mb-3 text-sm font-bold text-slate-900 dark:text-white">The fairness test</h4>
 						<blockquote
 							class="mb-3 text-sm leading-relaxed text-slate-600 italic dark:text-slate-300"
 						>
@@ -392,9 +396,7 @@
 							<div
 								class="group rounded-xl p-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
 							>
-								<div
-									class="mb-1 text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400"
-								>
+								<div class="mb-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
 									Combined Capacity
 								</div>
 								<div
@@ -410,9 +412,7 @@
 							<div
 								class="group rounded-xl p-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
 							>
-								<div
-									class="mb-1 text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400"
-								>
+								<div class="mb-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
 									Shared Expenses
 								</div>
 								<div class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
@@ -426,9 +426,7 @@
 							<div
 								class="group rounded-xl p-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
 							>
-								<div
-									class="mb-1 text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400"
-								>
+								<div class="mb-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
 									{remainingCapacity >= 0 ? 'Remaining Buffer' : 'Deficit'}
 								</div>
 								<div

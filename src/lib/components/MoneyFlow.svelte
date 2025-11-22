@@ -19,13 +19,14 @@
 	}
 
 	$: monthlyMarketRent = state.timeframe === 'yearly' ? state.marketRent / 12 : state.marketRent;
+	$: totalRentReceived = nonOwners.reduce((sum, p) => sum + getRentPayment(p.id), 0);
 </script>
 
 <div class="mt-4" transition:slide>
 	<div
 		class="relative rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700"
 	>
-		<h3 class="mb-6 text-center text-sm font-bold tracking-wider text-slate-900 uppercase">
+		<h3 class="mb-6 text-center text-sm font-bold text-slate-900 dark:text-white">
 			Property Money Flow
 		</h3>
 
@@ -46,12 +47,17 @@
 						<div class="text-xs text-slate-500 dark:text-slate-400">Non-Owner</div>
 
 						<!-- Arrow to House -->
-						<div class="absolute top-1/2 -right-8 hidden h-0.5 w-8 bg-slate-300 md:block"></div>
-						<div
-							class="absolute top-1/2 -right-8 hidden translate-x-6 -translate-y-1.5 text-slate-300 md:block"
+						<svg
+							class="absolute top-1/2 -right-12 hidden h-8 w-12 -translate-y-1/2 text-slate-300 md:block"
+							viewBox="0 0 48 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
 						>
-							▶
-						</div>
+							<path d="M4 12h36m-6-6l6 6-6 6" />
+						</svg>
 
 						<div
 							class="mt-2 rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700 dark:bg-red-900/30 dark:text-red-300"
@@ -95,17 +101,22 @@
 						class="group relative flex flex-col items-center rounded-lg border-2 border-amber-200 bg-amber-50 p-4 transition-all hover:border-amber-400 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:hover:border-amber-500 dark:hover:bg-amber-900/40"
 					>
 						<!-- Arrow from House -->
-						<div class="absolute top-1/2 -left-8 hidden h-0.5 w-8 bg-amber-300 md:block"></div>
-						<div
-							class="absolute top-1/2 -left-8 hidden translate-x-0 -translate-y-1.5 text-amber-300 md:block"
+						<svg
+							class="absolute top-1/2 -left-12 hidden h-8 w-12 -translate-y-1/2 text-amber-300 md:block"
+							viewBox="0 0 48 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
 						>
-							▶
-						</div>
+							<path d="M4 12h36m-6-6l6 6-6 6" />
+						</svg>
 
 						<div
 							class="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-amber-200 text-xl shadow-sm group-hover:bg-amber-300 dark:bg-amber-800 dark:group-hover:bg-amber-700"
 						>
-							👑
+							🔑
 						</div>
 						<div class="font-bold text-slate-900 dark:text-white">{owner.name}</div>
 						<div class="text-xs text-slate-500 dark:text-slate-400">Property Owner</div>
@@ -114,12 +125,12 @@
 							class="mt-2 rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700 dark:bg-green-900/30 dark:text-green-300"
 						>
 							Receives {formatCurrency(
-								monthlyMarketRent,
+								totalRentReceived,
 								currency,
 								state.timeframe
 							)}/{state.timeframe === 'yearly' ? 'yr' : 'mo'}
 						</div>
-						<div class="mt-1 text-[10px] text-slate-500">(Imputed Income)</div>
+						<div class="mt-1 text-[10px] text-slate-500">(From non-owners)</div>
 					</div>
 				{/if}
 			</div>

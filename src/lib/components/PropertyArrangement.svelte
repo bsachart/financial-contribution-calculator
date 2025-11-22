@@ -6,47 +6,51 @@
 	import { CalculationService } from '$lib/services/calculationService';
 
 	export let showPropertyExplanation = true;
+	export let mode: 'toggle-only' | 'details-only' | 'both' = 'both'; // Control what to show
 
 	$: timeframe = $calculatorStore.timeframe;
 	$: currencySymbol = getCurrencySymbol($calculatorStore.currency);
 	$: results = CalculationService.calculate($calculatorStore);
 </script>
 
-<div>
-	<label class="block">
-		<span class="label-text">Housing</span>
-		<div class="relative flex w-full rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
-			<button
-				type="button"
-				class="w-full rounded-lg px-3 py-2 text-xs font-semibold transition-all {$calculatorStore.propertyArrangement ===
-				'none'
-					? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
-					: 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}"
-				on:click={() => calculatorStore.setPropertyArrangement('none')}
-			>
-				Renting
-			</button>
-			<button
-				type="button"
-				class="w-full rounded-lg px-3 py-2 text-xs font-semibold transition-all {$calculatorStore.propertyArrangement ===
-				'owned'
-					? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
-					: 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}"
-				on:click={() => calculatorStore.setPropertyArrangement('owned')}
-			>
-				One Owns
-			</button>
-		</div>
-	</label>
-</div>
+<!-- Housing Toggle (for grid) -->
+{#if mode === 'toggle-only' || mode === 'both'}
+	<div>
+		<label class="block">
+			<span class="label-text">Housing</span>
+			<div class="relative flex w-full rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
+				<button
+					type="button"
+					class="w-full rounded-lg px-3 py-2 text-xs font-semibold transition-all {$calculatorStore.propertyArrangement ===
+					'none'
+						? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
+						: 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}"
+					on:click={() => calculatorStore.setPropertyArrangement('none')}
+				>
+					Renting
+				</button>
+				<button
+					type="button"
+					class="w-full rounded-lg px-3 py-2 text-xs font-semibold transition-all {$calculatorStore.propertyArrangement ===
+					'owned'
+						? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
+						: 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}"
+					on:click={() => calculatorStore.setPropertyArrangement('owned')}
+				>
+					One Owns
+				</button>
+			</div>
+		</label>
+	</div>
+{/if}
 
-<!-- Property Ownership Details (Expanded) -->
-{#if $calculatorStore.propertyArrangement === 'owned'}
+<!-- Property Ownership Details (Full Width - to be placed separately) -->
+{#if (mode === 'details-only' || mode === 'both') && $calculatorStore.propertyArrangement === 'owned'}
 	<div
-		class="rounded-b-2xl border-t border-slate-200 bg-slate-50/50 p-4 dark:border-slate-700 dark:bg-slate-800/30"
+		class="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-700 dark:bg-slate-800/30"
 		in:fade
 	>
-		<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+		<div class="space-y-6">
 			<!-- Who owns -->
 			<div>
 				<label class="block">
@@ -77,10 +81,11 @@
 			<div>
 				<label class="block">
 					<span class="label-text">
-						Fair Market Rent ({timeframe === 'yearly' ? 'Yearly' : 'Monthly'})
+						Fair market rent ({timeframe === 'yearly' ? 'yearly' : 'monthly'})
 					</span>
 					<div class="input-group">
-						<span class="absolute top-1/2 left-3 -translate-y-1/2 font-medium text-slate-400"
+						<span
+							class="absolute top-1/2 left-3 -translate-y-1/2 font-medium text-slate-500 dark:text-slate-200"
 							>{currencySymbol}</span
 						>
 						<input
@@ -100,7 +105,7 @@
 			</div>
 		</div>
 
-		<!-- Property Logic Explanation -->
+		<!-- Property Ownership Logic & Money Flow (Full Width) -->
 		{#if $calculatorStore.propertyOwnerId && $calculatorStore.marketRent > 0}
 			<div
 				class="mt-6 overflow-hidden rounded-xl border border-amber-200/50 bg-amber-50/50 dark:border-amber-800/30 dark:bg-amber-900/10"
@@ -113,7 +118,7 @@
 					<span
 						class="flex items-center gap-2 text-sm font-bold text-amber-900 dark:text-amber-400"
 					>
-						<span>🏠</span> Property Ownership Logic
+						<span>🏠</span> Property ownership logic
 					</span>
 					<span
 						class="text-amber-600 transition-transform dark:text-amber-500 {showPropertyExplanation
@@ -125,7 +130,7 @@
 				</button>
 
 				{#if showPropertyExplanation}
-					<div class="p-4 pt-0">
+					<div class="p-0">
 						<MoneyFlow {results} state={$calculatorStore} />
 					</div>
 				{/if}
