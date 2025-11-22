@@ -7,6 +7,7 @@
 	import PartnerColumn from '$lib/components/PartnerColumn.svelte';
 	import ResultCard from '$lib/components/ResultCard.svelte';
 	import CurrencySelector from '$lib/components/CurrencySelector.svelte';
+	import MoneyInput from '$lib/components/MoneyInput.svelte';
 	import PropertyArrangement from '$lib/components/PropertyArrangement.svelte';
 	import { fade, fly } from 'svelte/transition';
 
@@ -207,10 +208,10 @@
 		{/if}
 
 		<!-- Global Settings Bar -->
-		<div class="glass-card z-[100] mb-8 p-1">
+		<div class="glass-card relative z-[100] mb-8 p-1">
 			<div class="grid grid-cols-1 items-center gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4">
 				<!-- Currency -->
-				<div>
+				<div class="relative z-20">
 					<label class="block">
 						<span class="label-text">Currency</span>
 						<CurrencySelector
@@ -222,26 +223,17 @@
 
 				<!-- Shared Expenses -->
 				<div>
-					<label class="block">
-						<span class="label-text">Shared Expenses</span>
-						<div class="input-group relative">
-							<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-								<span class="font-medium text-slate-500 dark:text-slate-200">{currencySymbol}</span>
-							</div>
-							<input
-								type="number"
-								value={$calculatorStore.sharedExpenses}
-								on:input={(e) =>
-									calculatorStore.update((s) => ({
-										...s,
-										sharedExpenses: Math.max(0, Number((e.target as HTMLInputElement).value) || 0)
-									}))}
-								class="input-currency pl-12"
-								step="100"
-								min="0"
-							/>
-						</div>
-					</label>
+					<MoneyInput
+						id="shared-expenses"
+						label="Shared Expenses"
+						value={$calculatorStore.sharedExpenses}
+						onChange={(val) =>
+							calculatorStore.update((s) => ({
+								...s,
+								sharedExpenses: Math.max(0, val)
+							}))}
+						min={0}
+					/>
 				</div>
 
 				<!-- Timeframe -->

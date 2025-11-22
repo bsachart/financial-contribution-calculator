@@ -141,7 +141,7 @@
   }
 
   .label-text {
-    @apply block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5;
+    @apply block text-xs font-bold tracking-wider text-slate-600 dark:text-slate-300 mb-1.5;
   }
 
   .toggle-switch {

@@ -50,19 +50,20 @@
 		class="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-700 dark:bg-slate-800/30"
 		in:fade
 	>
-		<div class="space-y-6">
+		<!-- Grid layout: Who owns and Fair market rent side by side -->
+		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 			<!-- Who owns -->
 			<div>
 				<label class="block">
 					<span class="label-text">Who owns the property?</span>
-					<div class="flex flex-wrap gap-2">
+					<div class="relative flex w-full rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
 						{#each $calculatorStore.people as person}
 							<button
 								type="button"
-								class="min-w-[100px] flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all {$calculatorStore.propertyOwnerId ===
+								class="w-full rounded-lg px-3 py-2 text-xs font-semibold transition-all {$calculatorStore.propertyOwnerId ===
 								person.id
-									? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
-									: 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600'}"
+									? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
+									: 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}"
 								on:click={() => {
 									if ($calculatorStore.propertyArrangement !== 'owned') {
 										calculatorStore.setPropertyArrangement('owned');
