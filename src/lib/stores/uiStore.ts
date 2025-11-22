@@ -11,14 +11,16 @@ export interface UIState {
 	expandedHelp: Record<string, boolean>;
 }
 
-const DEFAULT_UI_STATE: UIState = {
-	activeSection: 'inheritance',
-	enabledSections: ['inheritance', 'debt', 'variable'],
-	expandedHelp: {}
-};
+function createDefaultUIState(): UIState {
+	return {
+		activeSection: 'inheritance',
+		enabledSections: ['inheritance', 'debt', 'variable'],
+		expandedHelp: {}
+	};
+}
 
 function createUIStore() {
-	const { subscribe, set, update } = writable<UIState>(DEFAULT_UI_STATE);
+	const { subscribe, set, update } = writable<UIState>(createDefaultUIState());
 
 	return {
 		subscribe,
@@ -46,8 +48,12 @@ function createUIStore() {
 			}));
 		},
 
+		setState(newState: UIState) {
+			set(newState);
+		},
+
 		resetUI() {
-			set(DEFAULT_UI_STATE);
+			set(createDefaultUIState());
 		}
 	};
 }

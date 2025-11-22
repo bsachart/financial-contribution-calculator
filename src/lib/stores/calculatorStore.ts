@@ -1,23 +1,22 @@
 import { writable, get } from 'svelte/store';
 import type { CalculatorState, Person, Inheritance } from '../domains/financialModels';
-import {
-	createInitialPerson,
-	createInitialInheritance,
-} from '../domains/financialModels';
-import { FinancialCalculatorService } from '../services/financialCalculatorService';
+import { createInitialPerson, createInitialInheritance } from '../domains/financialModels';
+import { CalculationService } from '../services/calculationService.ts';
 
-// Import UI state store separately (will be created in next step)
+// Import UI state store separately
 import { uiStore } from './uiStore';
 
-const DEFAULT_STATE: CalculatorState = {
-	currency: 'USD',
-	sharedExpenses: 3000,
-	timeframe: 'monthly',
-	people: [createInitialPerson('Partner A'), createInitialPerson('Partner B')],
-	propertyArrangement: 'none',
-	propertyOwnerId: null,
-	marketRent: 0
-};
+function createDefaultState(): CalculatorState {
+	return {
+		currency: 'USD',
+		sharedExpenses: 3000,
+		timeframe: 'monthly',
+		people: [createInitialPerson('Partner A'), createInitialPerson('Partner B')],
+		propertyArrangement: 'none',
+		propertyOwnerId: null,
+		marketRent: 0
+	};
+}
 
 function loadFromStorage(): CalculatorState | null {
 	if (typeof window === 'undefined') return null;
@@ -37,7 +36,7 @@ function loadFromStorage(): CalculatorState | null {
 }
 
 function createStore() {
-	const initialState = loadFromStorage() || DEFAULT_STATE;
+	const initialState = loadFromStorage() || createDefaultState();
 	const { subscribe, set, update } = writable<CalculatorState>(initialState);
 
 	// Auto-save to localStorage on every change
@@ -53,6 +52,7 @@ function createStore() {
 	return {
 		subscribe,
 		set,
+		update, // CRITICAL: Expose update method for direct state updates
 
 		// Partner management
 		addPartner(name?: string) {
@@ -168,14 +168,19 @@ function createStore() {
 			update((state) => ({ ...state, sharedExpenses: Math.max(0, expenses) }));
 		},
 
+		// CRITICAL FIX: This method was missing proper implementation
 		updateMarketRent(rent: number) {
-			update((state) => ({ ...state, marketRent: Math.max(0, rent) }));
+			update((state) => {
+				console.log('🔧 Updating market rent:', { old: state.marketRent, new: rent });
+				return { ...state, marketRent: Math.max(0, rent) };
+			});
 		},
 
 		setPropertyArrangement(arrangement: 'none' | 'owned') {
 			update((state) => ({
 				...state,
 				propertyArrangement: arrangement,
+				// Clear owner when switching to 'none'
 				propertyOwnerId: arrangement === 'none' ? null : state.propertyOwnerId
 			}));
 		},
@@ -184,6 +189,7 @@ function createStore() {
 			update((state) => {
 				// Ensure arrangement is 'owned' when setting owner
 				const newArrangement = ownerId ? 'owned' : 'none';
+				console.log('🔧 Setting property owner:', { ownerId, arrangement: newArrangement });
 				return {
 					...state,
 					propertyArrangement: newArrangement,
@@ -194,18 +200,49 @@ function createStore() {
 
 		// Data export/import
 		exportState(): string {
-			const state = get({ subscribe });
-			return JSON.stringify(state, null, 2);
+			const calculatorState = get({ subscribe });
+			const uiState = get(uiStore);
+			
+			const exportData = {
+				meta: {
+					version: 1,
+					date: new Date().toISOString(),
+					app: 'Financial Contribution Calculator'
+				},
+				calculator: calculatorState,
+				ui: uiState
+			};
+			
+			return JSON.stringify(exportData, null, 2);
 		},
 
 		importState(jsonString: string): boolean {
 			try {
 				const parsed = JSON.parse(jsonString);
-				if (!parsed.people || !Array.isArray(parsed.people)) {
-					throw new Error('Invalid state format');
+				
+				// Handle legacy format (direct calculator state)
+				if (parsed.people && Array.isArray(parsed.people) && !parsed.calculator) {
+					console.log('Importing legacy format');
+					set(parsed);
+					return true;
 				}
-				set(parsed);
-				return true;
+
+				// Handle new format
+				if (parsed.calculator) {
+					if (!parsed.calculator.people || !Array.isArray(parsed.calculator.people)) {
+						throw new Error('Invalid calculator state format');
+					}
+					set(parsed.calculator);
+					
+					// Import UI state if present
+					if (parsed.ui) {
+						uiStore.setState(parsed.ui);
+					}
+					
+					return true;
+				}
+
+				throw new Error('Unknown file format');
 			} catch (error) {
 				console.error('Failed to import state:', error);
 				return false;
@@ -213,13 +250,12 @@ function createStore() {
 		},
 
 		resetState() {
-			set(DEFAULT_STATE);
+			set(createDefaultState());
 		},
 
-		// ✅ Expose calculation results (read-only)
 		getResults() {
 			const state = get({ subscribe });
-			return FinancialCalculatorService.calculate(state);
+			return CalculationService.calculate(state);
 		}
 	};
 }

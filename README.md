@@ -320,14 +320,3 @@ This calculator is particularly valuable for couples establishing financial patt
 ## Development
 
 Built with SvelteKit and TypeScript. Comprehensive test coverage included.
-
----
-
-Things to improve:
-
-- Total shared expenses value is different than SHARED EXPENSES.
-- Yearly / Monthly button sticky? to avoid scrolling up and down
-- Why this matters can be shown next to the features, and always be displayed, not need to click to show or hide.
-- Allow closing "Quick Start Guide" section.
-- Can you make the features card in light blue when they are selected like in your react example, and can you alsomake the Calculation Results cards expand the whole section?
-- Currency selector does not update all the needed fields like the input for the market rent.

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { calculate } from './calculator';
-import type { CalculatorState, Person } from './stores/calculatorStore';
+import { CalculationService } from './services/calculationService';
+import type { CalculatorState, Person } from './domains/financialModels';
 
 const createPerson = (overrides: Partial<Person> = {}): Person => ({
 	id: crypto.randomUUID(),
@@ -27,18 +27,16 @@ const DEFAULT_STATE: CalculatorState = {
 	people: [],
 	propertyArrangement: 'none',
 	propertyOwnerId: null,
-	marketRent: 0,
-	activeSection: null,
-	enabledSections: []
+	marketRent: 0
 };
 
 describe('Calculator - Basic Functionality', () => {
 	it('handles zero income without NaN', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			people: [createPerson({ id: '1', netIncome: 0 }), createPerson({ id: '2', netIncome: 0 })]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		expect(results).toHaveLength(2);
 		results.forEach((r) => {
@@ -50,14 +48,14 @@ describe('Calculator - Basic Functionality', () => {
 	});
 
 	it('splits 60/40 based on income ratio', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			people: [
 				createPerson({ id: '1', netIncome: 6000 }),
 				createPerson({ id: '2', netIncome: 4000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		const a = results.find((r) => r.personId === '1')!;
 		const b = results.find((r) => r.personId === '2')!;
@@ -69,7 +67,7 @@ describe('Calculator - Basic Functionality', () => {
 	});
 
 	it('handles three partners with varying incomes', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			people: [
 				createPerson({ id: '1', netIncome: 6000 }),
@@ -77,7 +75,7 @@ describe('Calculator - Basic Functionality', () => {
 				createPerson({ id: '3', netIncome: 2000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		expect(results).toHaveLength(3);
 		const totalPercentage = results.reduce((sum, r) => sum + r.percentage, 0);
@@ -88,7 +86,7 @@ describe('Calculator - Basic Functionality', () => {
 	});
 
 	it('handles zero shared expenses', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			sharedExpenses: 0,
 			people: [
@@ -96,7 +94,7 @@ describe('Calculator - Basic Functionality', () => {
 				createPerson({ id: '2', netIncome: 3000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		results.forEach((r) => {
 			expect(r.monthlyContribution).toBe(0);
@@ -105,14 +103,14 @@ describe('Calculator - Basic Functionality', () => {
 	});
 
 	it('handles negative values gracefully', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			people: [
 				createPerson({ id: '1', netIncome: -1000 }),
 				createPerson({ id: '2', netIncome: 5000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		expect(results[0].monthlyCapacity).toBe(0);
 		expect(results[1].monthlyCapacity).toBeGreaterThan(0);
@@ -125,7 +123,7 @@ describe('Calculator - Inheritance with Compounding', () => {
 		const fiveYearsAgo = new Date();
 		fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
 
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			people: [
 				createPerson({
@@ -145,7 +143,7 @@ describe('Calculator - Inheritance with Compounding', () => {
 				createPerson({ id: '2', netIncome: 5000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		const a = results.find((r) => r.personId === '1')!;
 		const b = results.find((r) => r.personId === '2')!;
@@ -165,7 +163,7 @@ describe('Calculator - Inheritance with Compounding', () => {
 		const oneYearAgo = new Date();
 		oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			people: [
 				createPerson({
@@ -193,7 +191,7 @@ describe('Calculator - Inheritance with Compounding', () => {
 				createPerson({ id: '2', netIncome: 5000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		const a = results.find((r) => r.personId === '1')!;
 		// First inheritance compounded 5 years
@@ -205,7 +203,7 @@ describe('Calculator - Inheritance with Compounding', () => {
 		const fiveYearsAgo = new Date();
 		fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
 
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			people: [
 				createPerson({
@@ -225,7 +223,7 @@ describe('Calculator - Inheritance with Compounding', () => {
 				createPerson({ id: '2', netIncome: 5000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		const a = results.find((r) => r.personId === '1')!;
 		// Compounded value ≈ $131k, then 50% discount = $65.5k
@@ -235,7 +233,7 @@ describe('Calculator - Inheritance with Compounding', () => {
 	});
 
 	it('applies discount to passive advantages', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			people: [
 				createPerson({
@@ -248,7 +246,7 @@ describe('Calculator - Inheritance with Compounding', () => {
 				createPerson({ id: '2', netIncome: 5000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		const a = results.find((r) => r.personId === '1')!;
 		// $100k * 0.3 * 6% / 12 = ~$150/month
@@ -256,7 +254,7 @@ describe('Calculator - Inheritance with Compounding', () => {
 	});
 
 	it('applies uncertainty discount to future inheritance', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			people: [
 				createPerson({
@@ -268,7 +266,7 @@ describe('Calculator - Inheritance with Compounding', () => {
 				createPerson({ id: '2', netIncome: 5000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		const a = results.find((r) => r.personId === '1')!;
 		// $200k * 0.5 * 5.5% / 12 = ~$458/month
@@ -278,42 +276,42 @@ describe('Calculator - Inheritance with Compounding', () => {
 
 describe('Calculator - Debt & Obligations', () => {
 	it('deducts student loans from capacity', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			people: [
 				createPerson({ id: '1', netIncome: 5000, studentLoans: 500 }),
 				createPerson({ id: '2', netIncome: 5000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		const a = results.find((r) => r.personId === '1')!;
 		expect(a.monthlyCapacity).toBeCloseTo(4500, 0);
 	});
 
 	it('deducts family support from capacity', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			people: [
 				createPerson({ id: '1', netIncome: 5000, familySupport: 800 }),
 				createPerson({ id: '2', netIncome: 5000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		const a = results.find((r) => r.personId === '1')!;
 		expect(a.monthlyCapacity).toBeCloseTo(4200, 0);
 	});
 
 	it('handles combined debt obligations', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			people: [
 				createPerson({ id: '1', netIncome: 6000, studentLoans: 500, familySupport: 300 }),
 				createPerson({ id: '2', netIncome: 5000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		const a = results.find((r) => r.personId === '1')!;
 		expect(a.monthlyCapacity).toBeCloseTo(5200, 0);
@@ -322,7 +320,7 @@ describe('Calculator - Debt & Obligations', () => {
 
 describe('Calculator - Variable Income', () => {
 	it('applies uncertainty discount correctly', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			people: [
 				createPerson({
@@ -334,7 +332,7 @@ describe('Calculator - Variable Income', () => {
 				createPerson({ id: '2', netIncome: 5000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		const a = results.find((r) => r.personId === '1')!;
 		// $12k * 50% / 12 = $500/month
@@ -342,7 +340,7 @@ describe('Calculator - Variable Income', () => {
 	});
 
 	it('handles 0% discount (guaranteed bonus)', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			people: [
 				createPerson({
@@ -354,14 +352,14 @@ describe('Calculator - Variable Income', () => {
 				createPerson({ id: '2', netIncome: 5000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		const a = results.find((r) => r.personId === '1')!;
 		expect(a.monthlyCapacity).toBeCloseTo(6000, 0);
 	});
 
 	it('handles 100% discount (ignore variable income)', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			people: [
 				createPerson({
@@ -373,7 +371,7 @@ describe('Calculator - Variable Income', () => {
 				createPerson({ id: '2', netIncome: 5000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		const a = results.find((r) => r.personId === '1')!;
 		expect(a.monthlyCapacity).toBeCloseTo(5000, 0);
@@ -382,14 +380,14 @@ describe('Calculator - Variable Income', () => {
 
 describe('Calculator - Retirement Matching', () => {
 	it('adds employer matching to capacity', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			people: [
 				createPerson({ id: '1', netIncome: 5000, retirementMatching: 300 }),
 				createPerson({ id: '2', netIncome: 5000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		const a = results.find((r) => r.personId === '1')!;
 		const b = results.find((r) => r.personId === '2')!;
@@ -399,14 +397,14 @@ describe('Calculator - Retirement Matching', () => {
 	});
 
 	it('handles matching correctly in split', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			people: [
 				createPerson({ id: '1', netIncome: 6000, retirementMatching: 500 }),
 				createPerson({ id: '2', netIncome: 4000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		const a = results.find((r) => r.personId === '1')!;
 		// 6500 / (6500 + 4000) = 61.9%
@@ -416,7 +414,7 @@ describe('Calculator - Retirement Matching', () => {
 
 describe('Calculator - Property Ownership', () => {
 	it('adds imputed rent for owner', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			propertyArrangement: 'owned',
 			propertyOwnerId: '1',
@@ -426,18 +424,19 @@ describe('Calculator - Property Ownership', () => {
 				createPerson({ id: '2', netIncome: 5000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		const a = results.find((r) => r.personId === '1')!;
 		const b = results.find((r) => r.personId === '2')!;
 
 		// Owner gets 50% of $2000 = $1000 added to capacity
+		// Non-owner pays 50% of $2000 = $1000 deducted from capacity
 		expect(a.monthlyCapacity).toBeCloseTo(6000, 0);
-		expect(b.monthlyCapacity).toBeCloseTo(5000, 0);
+		expect(b.monthlyCapacity).toBeCloseTo(4000, 0);
 	});
 
 	it('handles property ownership with unequal incomes', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			propertyArrangement: 'owned',
 			propertyOwnerId: '2',
@@ -447,18 +446,19 @@ describe('Calculator - Property Ownership', () => {
 				createPerson({ id: '2', netIncome: 4000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		const a = results.find((r) => r.personId === '1')!;
 		const b = results.find((r) => r.personId === '2')!;
 
 		// Owner (lower earner) gets $1500 boost
+		// Non-owner (higher earner) pays $1500 rent
 		expect(b.monthlyCapacity).toBeCloseTo(5500, 0);
-		expect(a.monthlyCapacity).toBeCloseTo(8000, 0);
+		expect(a.monthlyCapacity).toBeCloseTo(6500, 0);
 	});
 
 	it('ignores property if no owner set', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			propertyArrangement: 'owned',
 			propertyOwnerId: null,
@@ -468,7 +468,7 @@ describe('Calculator - Property Ownership', () => {
 				createPerson({ id: '2', netIncome: 5000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		results.forEach((r) => {
 			expect(r.monthlyCapacity).toBeCloseTo(5000, 0);
@@ -478,7 +478,7 @@ describe('Calculator - Property Ownership', () => {
 
 describe('Calculator - Timeframe Conversion', () => {
 	it('converts yearly to monthly correctly', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			timeframe: 'yearly',
 			sharedExpenses: 36000,
@@ -487,14 +487,14 @@ describe('Calculator - Timeframe Conversion', () => {
 				createPerson({ id: '2', netIncome: 40000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		const a = results.find((r) => r.personId === '1')!;
 		expect(a.monthlyContribution).toBeCloseTo(1800, 0);
 	});
 
 	it('converts yearly debt obligations correctly', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			timeframe: 'yearly',
 			people: [
@@ -502,7 +502,7 @@ describe('Calculator - Timeframe Conversion', () => {
 				createPerson({ id: '2', netIncome: 60000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		const a = results.find((r) => r.personId === '1')!;
 		expect(a.monthlyCapacity).toBeCloseTo(4500, 0);
@@ -514,7 +514,7 @@ describe('Calculator - Complex Scenarios', () => {
 		const fiveYearsAgo = new Date();
 		fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
 
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			propertyArrangement: 'owned',
 			propertyOwnerId: '1',
@@ -547,25 +547,25 @@ describe('Calculator - Complex Scenarios', () => {
 				})
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		const a = results.find((r) => r.personId === '1')!;
 		const b = results.find((r) => r.personId === '2')!;
 
 		expect(a.monthlyCapacity).toBeGreaterThan(10000);
-		expect(b.monthlyCapacity).toBeGreaterThan(4500);
+		expect(b.monthlyCapacity).toBeGreaterThan(3800);
 		expect(a.percentage).toBeGreaterThan(65);
 	});
 
 	it('prevents negative capacities', () => {
-		const state = {
+		const state: CalculatorState = {
 			...DEFAULT_STATE,
 			people: [
 				createPerson({ id: '1', netIncome: 3000, studentLoans: 2000, familySupport: 1500 }),
 				createPerson({ id: '2', netIncome: 5000 })
 			]
 		};
-		const results = calculate(state);
+		const results = CalculationService.calculate(state);
 
 		results.forEach((r) => {
 			expect(r.monthlyCapacity).toBeGreaterThanOrEqual(0);
