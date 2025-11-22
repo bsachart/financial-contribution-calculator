@@ -90,10 +90,13 @@
 						>Property Owner</strong
 					>
 					<p class="text-xs font-medium text-amber-700 dark:text-amber-500/80">
-						Receives {currencySymbol}{$calculatorStore.marketRent.toLocaleString()}/{timeframe ===
-						'yearly'
-							? 'yr'
-							: 'mo'} imputed income
+						Imputed Income: {currencySymbol}{Math.round(
+							($calculatorStore.marketRent / $calculatorStore.people.length) *
+								($calculatorStore.people.length - 1)
+						).toLocaleString()}/{timeframe === 'yearly' ? 'yr' : 'mo'}
+					</p>
+					<p class="text-[10px] text-amber-600/70 dark:text-amber-500/60">
+						(Market Rent: {currencySymbol}{$calculatorStore.marketRent.toLocaleString()})
 					</p>
 				</div>
 			</div>

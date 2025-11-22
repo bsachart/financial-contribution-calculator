@@ -135,13 +135,15 @@ The heavy discount recognizes these advantages are real but not equivalent to ha
 
 ### 6. Pre-Relationship Property Ownership
 
-1. **Owner receives full market rent as imputed income**
-   - This represents the value of the property they're providing
-   - Increases their financial capacity
+1. **Owner receives rent paid by non-owner(s) as imputed income**
+   - This represents the cash flow from the partner(s)
+   - Increases their financial capacity by the amount received
+   - *Note: The owner's own share of the property value is "consumed" by living there, so it is not added to their capacity for contribution purposes.*
 
 2. **Non-owner(s) pay their share of market rent**
    - Each person pays 1/(number of people) of market rent
    - Represents their housing consumption cost
+   - **Crucial:** This amount is *deducted* from their financial capacity because it's a committed housing cost paid to the partner, reducing their ability to contribute to other shared expenses.
 
 3. **Shared expenses exclude rent/mortgage**
    - Only include utilities, insurance, maintenance
